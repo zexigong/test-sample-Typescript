@@ -8,7 +8,7 @@ from openai import AzureOpenAI
 # Azure OpenAI Configuration (Base Model)
 endpoint = os.getenv("ENDPOINT_URL", "https://grustudio3124950313.openai.azure.com/")
 deployment = os.getenv("DEPLOYMENT_NAME", "gpt-4o")
-subscription_key = os.getenv("AZURE_OPENAI_API_KEY", "1ZZRqhdM3Z7J33SCc2QBAtCEsgO9z7dgcXWMU0ms02cqHfXnfnMbJQQJ99AJACYeBjFXJ3w3AAAAACOG2qup")
+subscription_key = os.getenv("AZURE_OPENAI_API_KEY", "")
 
 client = AzureOpenAI(
     azure_endpoint=endpoint,
