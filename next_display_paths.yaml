@@ -1,0 +1,40 @@
+entries:
+  - test_file: next\batcher.test.ts\batcher.test.ts
+    test_display: packages/next/src/lib/batcher.test.ts
+    source_display: packages/next/src/lib/batcher.ts
+
+  - test_file: next\get-files-in-dir.test.ts\get-files-in-dir.test.ts
+    test_display: test/unit/get-files-in-dir.test.ts
+    source_display: packages/next/src/lib/get-files-in-dir.ts
+
+  - test_file: next\is-dynamic.test.ts\is-dynamic.test.ts
+    test_display: packages/next/src/shared/lib/router/utils/is-dynamic.test.ts
+    source_display: packages/next/src/shared/lib/router/utils/is-dynamic.ts
+
+  - test_file: next\is-equal-node.unit.test.ts\is-equal-node.unit.test.ts
+    test_display: test/unit/is-equal-node.unit.test.ts
+    source_display: packages/next/src/client/head-manager.ts
+
+  - test_file: next\recursive-delete.test.ts\recursive-delete.test.ts
+    test_display: test/unit/recursive-delete.test.ts
+    source_display: packages/next/src/lib/recursive-delete.ts
+
+  - test_file: next\recursive-readdir.test.ts\recursive-readdir.test.ts
+    test_display: test/unit/recursive-readdir.test.ts
+    source_display: packages/next/src/lib/recursive-readdir.ts
+
+  - test_file: next\interception-routes.test.ts\interception-routes.test.ts
+    test_display: packages/next/src/shared/lib/router/utils/interception-routes.test.ts
+    source_display: packages/next/src/shared/lib/router/utils/interception-routes.ts
+
+  - test_file: next\split-cookies-string.test.ts\split-cookies-string.test.ts
+    test_display: test/unit/split-cookies-string.test.ts
+    source_display: packages/next/src/server/web/utils.ts
+
+  - test_file: next\web-on-close.test.ts\web-on-close.test.ts
+    test_display: packages/next/src/server/web/web-on-close.test.ts
+    source_display: packages/next/src/server/web/web-on-close.ts
+
+  - test_file: next\write-app-declarations.test.ts\write-app-declarations.test.ts
+    test_display: test/unit/write-app-declarations.test.ts
+    source_display: packages/next/src/lib/typescript/writeAppTypeDeclarations.ts

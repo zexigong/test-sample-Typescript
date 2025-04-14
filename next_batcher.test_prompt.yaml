@@ -1,0 +1,91 @@
+messages:
+- content: You are an AI agent expert in writing unit tests. Your task is to write
+    unit tests for the given code files of the repository. Make sure the tests can
+    be executed without lint or compile errors.
+  role: system
+- content: "### Task Information\nBased on the source code, write/rewrite tests to\
+    \ cover the source code.\nRepository: next\nSource File Path: packages/next/src/lib/batcher.ts\n\
+    Test File Path: packages/next/src/lib/batcher.test.ts\nProject Programming Language:\
+    \ typescript\nTesting Framework: jest\n### Source File Content\n### Source File\
+    \ Content:\nimport type { SchedulerFn } from './scheduler'\n\nimport { DetachedPromise\
+    \ } from './detached-promise'\n\ntype CacheKeyFn<K, C extends string | number\
+    \ | null> = (\n  key: K\n) => PromiseLike<C> | C\n\ntype BatcherOptions<K, C extends\
+    \ string | number | null> = {\n  cacheKeyFn?: CacheKeyFn<K, C>\n  schedulerFn?:\
+    \ SchedulerFn<void>\n}\n\ntype WorkFn<V, C> = (\n  key: C,\n  resolve: (value:\
+    \ V | PromiseLike<V>) => void\n) => Promise<V>\n\n/**\n * A wrapper for a function\
+    \ that will only allow one call to the function to\n * execute at a time.\n */\n\
+    export class Batcher<K, V, C extends string | number | null> {\n  private readonly\
+    \ pending = new Map<C, Promise<V>>()\n\n  protected constructor(\n    private\
+    \ readonly cacheKeyFn?: CacheKeyFn<K, C>,\n    /**\n     * A function that will\
+    \ be called to schedule the wrapped function to be\n     * executed. This defaults\
+    \ to a function that will execute the function\n     * immediately.\n     */\n\
+    \    private readonly schedulerFn: SchedulerFn<void> = (fn) => fn()\n  ) {}\n\n\
+    \  /**\n   * Creates a new instance of PendingWrapper. If the key extends a string\
+    \ or\n   * number, the key will be used as the cache key. If the key is an object,\
+    \ a\n   * cache key function must be provided.\n   */\n  public static create<K\
+    \ extends string | number | null, V>(\n    options?: BatcherOptions<K, K>\n  ):\
+    \ Batcher<K, V, K>\n  public static create<K, V, C extends string | number | null>(\n\
+    \    options: BatcherOptions<K, C> &\n      Required<Pick<BatcherOptions<K, C>,\
+    \ 'cacheKeyFn'>>\n  ): Batcher<K, V, C>\n  public static create<K, V, C extends\
+    \ string | number | null>(\n    options?: BatcherOptions<K, C>\n  ): Batcher<K,\
+    \ V, C> {\n    return new Batcher<K, V, C>(options?.cacheKeyFn, options?.schedulerFn)\n\
+    \  }\n\n  /**\n   * Wraps a function in a promise that will be resolved or rejected\
+    \ only once\n   * for a given key. This will allow multiple calls to the function\
+    \ to be\n   * made, but only one will be executed at a time. The result of the\
+    \ first\n   * call will be returned to all callers.\n   *\n   * @param key the\
+    \ key to use for the cache\n   * @param fn the function to wrap\n   * @returns\
+    \ a promise that resolves to the result of the function\n   */\n  public async\
+    \ batch(key: K, fn: WorkFn<V, C>): Promise<V> {\n    const cacheKey = (this.cacheKeyFn\
+    \ ? await this.cacheKeyFn(key) : key) as C\n    if (cacheKey === null) {\n   \
+    \   return fn(cacheKey, Promise.resolve)\n    }\n\n    const pending = this.pending.get(cacheKey)\n\
+    \    if (pending) return pending\n\n    const { promise, resolve, reject } = new\
+    \ DetachedPromise<V>()\n    this.pending.set(cacheKey, promise)\n\n    this.schedulerFn(async\
+    \ () => {\n      try {\n        const result = await fn(cacheKey, resolve)\n\n\
+    \        // Resolving a promise multiple times is a no-op, so we can safely\n\
+    \        // resolve all pending promises with the same result.\n        resolve(result)\n\
+    \      } catch (err) {\n        reject(err)\n      } finally {\n        this.pending.delete(cacheKey)\n\
+    \      }\n    })\n\n    return promise\n  }\n}\n\n### Source File Dependency Files\
+    \ Content\n### Dependency File: detached-promise.ts\n/**\n * A `Promise.withResolvers`\
+    \ implementation that exposes the `resolve` and\n * `reject` functions on a `Promise`.\n\
+    \ *\n * @see https://tc39.es/proposal-promise-with-resolvers/\n */\nexport class\
+    \ DetachedPromise<T = any> {\n  public readonly resolve: (value: T | PromiseLike<T>)\
+    \ => void\n  public readonly reject: (reason: any) => void\n  public readonly\
+    \ promise: Promise<T>\n\n  constructor() {\n    let resolve: (value: T | PromiseLike<T>)\
+    \ => void\n    let reject: (reason: any) => void\n\n    // Create the promise\
+    \ and assign the resolvers to the object.\n    this.promise = new Promise<T>((res,\
+    \ rej) => {\n      resolve = res\n      reject = rej\n    })\n\n    // We know\
+    \ that resolvers is defined because the Promise constructor runs\n    // synchronously.\n\
+    \    this.resolve = resolve!\n    this.reject = reject!\n  }\n}\n\n\n### Dependency\
+    \ File: scheduler.ts\nexport type ScheduledFn<T = void> = () => T | PromiseLike<T>\n\
+    export type SchedulerFn<T = void> = (cb: ScheduledFn<T>) => void\n\n/**\n * Schedules\
+    \ a function to be called on the next tick after the other promises\n * have been\
+    \ resolved.\n *\n * @param cb the function to schedule\n */\nexport const scheduleOnNextTick\
+    \ = <T = void>(cb: ScheduledFn<T>): void => {\n  // We use Promise.resolve().then()\
+    \ here so that the operation is scheduled at\n  // the end of the promise job\
+    \ queue, we then add it to the next process tick\n  // to ensure it's evaluated\
+    \ afterwards.\n  //\n  // This was inspired by the implementation of the DataLoader\
+    \ interface: https://github.com/graphql/dataloader/blob/d336bd15282664e0be4b4a657cb796f09bafbc6b/src/index.js#L213-L255\n\
+    \  //\n  Promise.resolve().then(() => {\n    if (process.env.NEXT_RUNTIME ===\
+    \ 'edge') {\n      setTimeout(cb, 0)\n    } else {\n      process.nextTick(cb)\n\
+    \    }\n  })\n}\n\n/**\n * Schedules a function to be called using `setImmediate`\
+    \ or `setTimeout` if\n * `setImmediate` is not available (like in the Edge runtime).\n\
+    \ *\n * @param cb the function to schedule\n */\nexport const scheduleImmediate\
+    \ = <T = void>(cb: ScheduledFn<T>): void => {\n  if (process.env.NEXT_RUNTIME\
+    \ === 'edge') {\n    setTimeout(cb, 0)\n  } else {\n    setImmediate(cb)\n  }\n\
+    }\n\n/**\n * returns a promise than resolves in a future task. There is no guarantee\
+    \ that the task it resolves in\n * will be the next task but if you await it you\
+    \ can at least be sure that the current task is over and\n * most usefully that\
+    \ the entire microtask queue of the current task has been emptied.\n */\nexport\
+    \ function atLeastOneTask() {\n  return new Promise<void>((resolve) => scheduleImmediate(resolve))\n\
+    }\n\n/**\n * This utility function is extracted to make it easier to find places\
+    \ where we are doing\n * specific timing tricks to try to schedule work after\
+    \ React has rendered. This is especially\n * important at the moment because Next.js\
+    \ uses the edge builds of React which use setTimeout to\n * schedule work when\
+    \ you might expect that something like setImmediate would do the trick.\n *\n\
+    \ * Long term we should switch to the node versions of React rendering when possible\
+    \ and then\n * update this to use setImmediate rather than setTimeout\n */\nexport\
+    \ function waitAtLeastOneReactRenderTask(): Promise<void> {\n  if (process.env.NEXT_RUNTIME\
+    \ === 'edge') {\n    return new Promise((r) => setTimeout(r, 0))\n  } else {\n\
+    \    return new Promise((r) => setImmediate(r))\n  }\n}\n\nOutput the complete\
+    \ test file, code only, no explanations.\n### Time\nCurrent time: 2025-04-11 20:33:43\n"
+  role: user

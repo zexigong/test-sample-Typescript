@@ -1,0 +1,40 @@
+entries:
+  - test_file: type-fest\async-return-type.ts\async-return-type.ts
+    test_display: test-d/async-return-type.ts
+    source_display: source/async-return-type.d.ts
+
+  - test_file: type-fest\camel-cased-properties.ts\camel-cased-properties.ts
+    test_display: test-d/camel-cased-properties.ts
+    source_display: source/camel-cased-properties.d.ts
+
+  - test_file: type-fest\camel-case.ts\camel-case.ts
+    test_display: test-d/camel-case.ts
+    source_display: source/camel-case.d.ts
+
+  - test_file: type-fest\distributed-omit.ts\distributed-omit.ts
+    test_display: test-d/distributed-omit.ts
+    source_display: source/distributed-omit.d.ts
+
+  - test_file: type-fest\empty-object.ts\empty-object.ts
+    test_display: test-d/empty-object.ts
+    source_display: source/empty-object.d.ts
+
+  - test_file: type-fest\find-global-type.ts\find-global-type.ts
+    test_display: test-d/find-global-type.ts
+    source_display: source/find-global-type.d.ts
+
+  - test_file: type-fest\includes.ts\includes.ts
+    test_display: test-d/includes.ts
+    source_display: source/includes.d.ts
+
+  - test_file: type-fest\is-null.ts\is-null.ts
+    test_display: test-d/is-null.ts
+    source_display: source/is-null.d.ts
+
+  - test_file: type-fest\merge-exclusive.ts\merge-exclusive.ts
+    test_display: test-d/merge-exclusive.ts
+    source_display: source/merge-exclusive.d.ts
+
+  - test_file: type-fest\readonly-keys-of.ts\readonly-keys-of.ts
+    test_display: test-d/readonly-keys-of.ts
+    source_display: source/readonly-keys-of.d.ts

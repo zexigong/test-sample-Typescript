@@ -1,0 +1,50 @@
+messages:
+- content: You are an AI agent expert in writing unit tests. Your task is to write
+    unit tests for the given code files of the repository. Make sure the tests can
+    be executed without lint or compile errors.
+  role: system
+- content: "### Task Information\nBased on the source code, write/rewrite tests to\
+    \ cover the source code.\nRepository: NestJS\nSource File Path: packages/core/injector/opaque-key-factory/by-reference-module-opaque-key-factory.ts\n\
+    Test File Path: packages/core/test/injector/opaque-key-factory/by-reference-module-opaque-key-factory.spec.ts\n\
+    Project Programming Language: typescript\nTesting Framework: jest\n### Source\
+    \ File Content\n### Source File Content:\nimport { DynamicModule } from '@nestjs/common/interfaces/modules/dynamic-module.interface';\n\
+    import { ForwardReference } from '@nestjs/common/interfaces/modules/forward-reference.interface';\n\
+    import { Type } from '@nestjs/common/interfaces/type.interface';\nimport { randomStringGenerator\
+    \ } from '@nestjs/common/utils/random-string-generator.util';\nimport { createHash\
+    \ } from 'crypto';\nimport { ModuleOpaqueKeyFactory } from './interfaces/module-opaque-key-factory.interface';\n\
+    \nconst K_MODULE_ID = Symbol('K_MODULE_ID');\n\nexport class ByReferenceModuleOpaqueKeyFactory\n\
+    \  implements ModuleOpaqueKeyFactory\n{\n  private readonly keyGenerationStrategy:\
+    \ 'random' | 'shallow';\n\n  constructor(options?: { keyGenerationStrategy: 'random'\
+    \ | 'shallow' }) {\n    this.keyGenerationStrategy = options?.keyGenerationStrategy\
+    \ ?? 'random';\n  }\n\n  public createForStatic(\n    moduleCls: Type,\n    originalRef:\
+    \ Type | ForwardReference = moduleCls,\n  ): string {\n    return this.getOrCreateModuleId(moduleCls,\
+    \ undefined, originalRef);\n  }\n\n  public createForDynamic(\n    moduleCls:\
+    \ Type<unknown>,\n    dynamicMetadata: Omit<DynamicModule, 'module'>,\n    originalRef:\
+    \ DynamicModule | ForwardReference,\n  ): string {\n    return this.getOrCreateModuleId(moduleCls,\
+    \ dynamicMetadata, originalRef);\n  }\n\n  private getOrCreateModuleId(\n    moduleCls:\
+    \ Type<unknown>,\n    dynamicMetadata: Partial<DynamicModule> | undefined,\n \
+    \   originalRef: Type | DynamicModule | ForwardReference,\n  ): string {\n   \
+    \ if (originalRef[K_MODULE_ID]) {\n      return originalRef[K_MODULE_ID];\n  \
+    \  }\n\n    let moduleId: string;\n    if (this.keyGenerationStrategy === 'random')\
+    \ {\n      moduleId = this.generateRandomString();\n    } else {\n      const\
+    \ delimiter = ':';\n      moduleId = dynamicMetadata\n        ? `${this.generateRandomString()}${delimiter}${this.hashString(moduleCls.name\
+    \ + JSON.stringify(dynamicMetadata))}`\n        : `${this.generateRandomString()}${delimiter}${this.hashString(moduleCls.toString())}`;\n\
+    \    }\n\n    originalRef[K_MODULE_ID] = moduleId;\n    return moduleId;\n  }\n\
+    \n  private hashString(value: string): string {\n    return createHash('sha256').update(value).digest('hex');\n\
+    \  }\n\n  private generateRandomString(): string {\n    return randomStringGenerator();\n\
+    \  }\n}\n\n### Source File Dependency Files Content\n### Dependency File: module-opaque-key-factory.interface.ts\n\
+    import { DynamicModule } from '@nestjs/common/interfaces/modules/dynamic-module.interface';\n\
+    import { ForwardReference } from '@nestjs/common/interfaces/modules/forward-reference.interface';\n\
+    import { Type } from '@nestjs/common/interfaces/type.interface';\n\nexport interface\
+    \ ModuleOpaqueKeyFactory {\n  /**\n   * Creates a unique opaque key for the given\
+    \ static module.\n   * @param moduleCls A static module class.\n   * @param originalRef\
+    \ Original object reference. In most cases, it's the same as `moduleCls`.\n  \
+    \ */\n  createForStatic(\n    moduleCls: Type,\n    originalRef: Type | ForwardReference,\n\
+    \  ): string;\n  /**\n   * Creates a unique opaque key for the given dynamic module.\n\
+    \   * @param moduleCls  A dynamic module class reference.\n   * @param dynamicMetadata\
+    \ Dynamic module metadata.\n   * @param originalRef Original object reference.\n\
+    \   */\n  createForDynamic(\n    moduleCls: Type<unknown>,\n    dynamicMetadata:\
+    \ Omit<DynamicModule, 'module'>,\n    originalRef: DynamicModule | ForwardReference,\n\
+    \  ): string;\n}\n\nOutput the complete test file, code only, no explanations.\n\
+    ### Time\nCurrent time: 2025-04-11 20:23:55\n"
+  role: user

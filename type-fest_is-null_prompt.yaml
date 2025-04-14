@@ -1,0 +1,72 @@
+messages:
+- content: You are an AI agent expert in writing unit tests. Your task is to write
+    unit tests for the given code files of the repository. Make sure the tests can
+    be executed without lint or compile errors.
+  role: system
+- content: '### Task Information
+
+    Based on the source code, write/rewrite tests to cover the source code.
+
+    Repository: type-fest
+
+    Source File Path: source/is-null.d.ts
+
+    Test File Path: test-d/is-null.ts
+
+    Project Programming Language: typescript
+
+    Testing Framework: tsd
+
+    ### Source File Content
+
+    ### Source File Content:
+
+    /**
+
+    Returns a boolean for whether the given type is `null`.
+
+
+    @example
+
+    ```
+
+    import type {IsNull} from ''type-fest'';
+
+
+    type NonNullFallback<T, Fallback> = IsNull<T> extends true ? Fallback : T;
+
+
+    type Example1 = NonNullFallback<null, string>;
+
+    //=> string
+
+
+    type Example2 = NonNullFallback<number, string>;
+
+    //=? number
+
+    ```
+
+
+    @category Type Guard
+
+    @category Utilities
+
+    */
+
+    export type IsNull<T> = [T] extends [null] ? true : false;
+
+
+    ### Source File Dependency Files Content
+
+    ### Dependency File: empty.txt
+
+
+    Output the complete test file, code only, no explanations.
+
+    ### Time
+
+    Current time: 2025-04-03 23:34:40
+
+    '
+  role: user

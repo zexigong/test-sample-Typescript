@@ -1,0 +1,65 @@
+messages:
+- content: You are an AI agent expert in writing unit tests. Your task is to write
+    unit tests for the given code files of the repository. Make sure the tests can
+    be executed without lint or compile errors.
+  role: system
+- content: "### Task Information\nBased on the source code, write/rewrite tests to\
+    \ cover the source code.\nRepository: next\nSource File Path: packages/next/src/lib/recursive-delete.ts\n\
+    Test File Path: test/unit/recursive-delete.test.ts\nProject Programming Language:\
+    \ typescript\nTesting Framework: Jest\n### Source File Content\n### Source File\
+    \ Content:\nimport type { Dirent } from 'fs'\nimport { promises } from 'fs'\n\
+    import { join, isAbsolute, dirname } from 'path'\nimport isError from './is-error'\n\
+    import { wait } from './wait'\n\nconst unlinkPath = async (p: string, isDir =\
+    \ false, t = 1): Promise<void> => {\n  try {\n    if (isDir) {\n      await promises.rmdir(p)\n\
+    \    } else {\n      await promises.unlink(p)\n    }\n  } catch (e) {\n    const\
+    \ code = isError(e) && e.code\n    if (\n      (code === 'EBUSY' ||\n        code\
+    \ === 'ENOTEMPTY' ||\n        code === 'EPERM' ||\n        code === 'EMFILE')\
+    \ &&\n      t < 3\n    ) {\n      await wait(t * 100)\n      return unlinkPath(p,\
+    \ isDir, t++)\n    }\n\n    if (code === 'ENOENT') {\n      return\n    }\n\n\
+    \    throw e\n  }\n}\n\n/**\n * Recursively delete directory contents\n */\nexport\
+    \ async function recursiveDelete(\n  /** Directory to delete the contents of */\n\
+    \  dir: string,\n  /** Exclude based on relative file path */\n  exclude?: RegExp,\n\
+    \  /** Ensures that parameter dir exists, this is not passed recursively */\n\
+    \  previousPath: string = ''\n): Promise<void> {\n  let result\n  try {\n    result\
+    \ = await promises.readdir(dir, { withFileTypes: true })\n  } catch (e) {\n  \
+    \  if (isError(e) && e.code === 'ENOENT') {\n      return\n    }\n    throw e\n\
+    \  }\n\n  await Promise.all(\n    result.map(async (part: Dirent) => {\n     \
+    \ const absolutePath = join(dir, part.name)\n\n      // readdir does not follow\
+    \ symbolic links\n      // if part is a symbolic link, follow it using stat\n\
+    \      let isDirectory = part.isDirectory()\n      const isSymlink = part.isSymbolicLink()\n\
+    \n      if (isSymlink) {\n        const linkPath = await promises.readlink(absolutePath)\n\
+    \n        try {\n          const stats = await promises.stat(\n            isAbsolute(linkPath)\n\
+    \              ? linkPath\n              : join(dirname(absolutePath), linkPath)\n\
+    \          )\n          isDirectory = stats.isDirectory()\n        } catch {}\n\
+    \      }\n\n      const pp = join(previousPath, part.name)\n      const isNotExcluded\
+    \ = !exclude || !exclude.test(pp)\n\n      if (isNotExcluded) {\n        if (isDirectory)\
+    \ {\n          await recursiveDelete(absolutePath, exclude, pp)\n        }\n \
+    \       return unlinkPath(absolutePath, !isSymlink && isDirectory)\n      }\n\
+    \    })\n  )\n}\n\n### Source File Dependency Files Content\n### Dependency File:\
+    \ is-error.ts\nimport { isPlainObject } from '../shared/lib/is-plain-object'\n\
+    \n// We allow some additional attached properties for Next.js errors\nexport interface\
+    \ NextError extends Error {\n  type?: string\n  page?: string\n  code?: string\
+    \ | number\n  cancelled?: boolean\n  digest?: number\n}\n\n/**\n * Checks whether\
+    \ the given value is a NextError.\n * This can be used to print a more detailed\
+    \ error message with properties like `code` & `digest`.\n */\nexport default function\
+    \ isError(err: unknown): err is NextError {\n  return (\n    typeof err === 'object'\
+    \ && err !== null && 'name' in err && 'message' in err\n  )\n}\n\nfunction safeStringify(obj:\
+    \ any) {\n  const seen = new WeakSet()\n\n  return JSON.stringify(obj, (_key,\
+    \ value) => {\n    // If value is an object and already seen, replace with \"\
+    [Circular]\"\n    if (typeof value === 'object' && value !== null) {\n      if\
+    \ (seen.has(value)) {\n        return '[Circular]'\n      }\n      seen.add(value)\n\
+    \    }\n    return value\n  })\n}\n\nexport function getProperError(err: unknown):\
+    \ Error {\n  if (isError(err)) {\n    return err\n  }\n\n  if (process.env.NODE_ENV\
+    \ === 'development') {\n    // provide better error for case where `throw undefined`\n\
+    \    // is called in development\n    if (typeof err === 'undefined') {\n    \
+    \  return new Error(\n        'An undefined error was thrown, ' +\n          'see\
+    \ here for more info: https://nextjs.org/docs/messages/threw-undefined'\n    \
+    \  )\n    }\n\n    if (err === null) {\n      return new Error(\n        'A null\
+    \ error was thrown, ' +\n          'see here for more info: https://nextjs.org/docs/messages/threw-undefined'\n\
+    \      )\n    }\n  }\n\n  return new Error(isPlainObject(err) ? safeStringify(err)\
+    \ : err + '')\n}\n\n\n### Dependency File: wait.ts\n/**\n * Wait for a given number\
+    \ of milliseconds and then resolve.\n *\n * @param ms the number of milliseconds\
+    \ to wait\n */\nexport async function wait(ms: number) {\n  return new Promise((resolve)\
+    \ => setTimeout(resolve, ms))\n}\n\nOutput the complete test file, code only,\
+    \ no explanations.\n### Time\nCurrent time: 2025-04-03 18:10:21\n"
+  role: user

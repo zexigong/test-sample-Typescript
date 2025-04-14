@@ -1,0 +1,154 @@
+messages:
+- content: You are an AI agent expert in writing unit tests. Your task is to write
+    unit tests for the given code files of the repository. Make sure the tests can
+    be executed without lint or compile errors.
+  role: system
+- content: "### Task Information\nBased on the source code, write/rewrite tests to\
+    \ cover the source code.\nRepository: type-fest\nSource File Path: source/camel-cased-properties.d.ts\n\
+    Test File Path: test-d/camel-cased-properties.ts\nProject Programming Language:\
+    \ typescript\nTesting Framework: tsd\n### Source File Content\n### Source File\
+    \ Content:\nimport type {CamelCase, CamelCaseOptions, DefaultCamelCaseOptions}\
+    \ from './camel-case';\nimport type {ApplyDefaultOptions} from './internal';\n\
+    \n/**\nConvert object properties to camel case but not recursively.\n\nThis can\
+    \ be useful when, for example, converting some API types from a different style.\n\
+    \n@see CamelCasedPropertiesDeep\n@see CamelCase\n\n@example\n```\nimport type\
+    \ {CamelCasedProperties} from 'type-fest';\n\ninterface User {\n\tUserId: number;\n\
+    \tUserName: string;\n}\n\nconst result: CamelCasedProperties<User> = {\n\tuserId:\
+    \ 1,\n\tuserName: 'Tom',\n};\n\nconst preserveConsecutiveUppercase: CamelCasedProperties<{fooBAR:\
+    \ string}, {preserveConsecutiveUppercase: false}> = {\n\tfooBar: 'string',\n};\n\
+    ```\n\n@category Change case\n@category Template literal\n@category Object\n*/\n\
+    export type CamelCasedProperties<Value, Options extends CamelCaseOptions = {}>\
+    \ = Value extends Function\n\t? Value\n\t: Value extends Array<infer U>\n\t\t\
+    ? Value\n\t\t: {\n\t\t\t[K in keyof Value as\n\t\t\tCamelCase<K, ApplyDefaultOptions<CamelCaseOptions,\
+    \ DefaultCamelCaseOptions, Options>>\n\t\t\t]: Value[K];\n\t\t};\n\n### Source\
+    \ File Dependency Files Content\n### Dependency File: camel-case.d.ts\nimport\
+    \ type {ApplyDefaultOptions} from './internal';\nimport type {Words} from './words';\n\
+    \n/**\nCamelCase options.\n\n@see {@link CamelCase}\n*/\nexport type CamelCaseOptions\
+    \ = {\n\t/**\n\tWhether to preserved consecutive uppercase letter.\n\n\t@default\
+    \ true\n\t*/\n\tpreserveConsecutiveUppercase?: boolean;\n};\n\nexport type DefaultCamelCaseOptions\
+    \ = {\n\tpreserveConsecutiveUppercase: true;\n};\n\n/**\nConvert an array of words\
+    \ to camel-case.\n*/\ntype CamelCaseFromArray<\n\tWords extends string[],\n\t\
+    Options extends Required<CamelCaseOptions>,\n\tOutputString extends string = '',\n\
+    > = Words extends [\n\tinfer FirstWord extends string,\n\t...infer RemainingWords\
+    \ extends string[],\n]\n\t? Options['preserveConsecutiveUppercase'] extends true\n\
+    \t\t? `${Capitalize<FirstWord>}${CamelCaseFromArray<RemainingWords, Options>}`\n\
+    \t\t: `${Capitalize<Lowercase<FirstWord>>}${CamelCaseFromArray<RemainingWords,\
+    \ Options>}`\n\t: OutputString;\n\n/**\nConvert a string literal to camel-case.\n\
+    \nThis can be useful when, for example, converting some kebab-cased command-line\
+    \ flags or a snake-cased database result.\n\nBy default, consecutive uppercase\
+    \ letter are preserved. See {@link CamelCaseOptions.preserveConsecutiveUppercase\
+    \ preserveConsecutiveUppercase} option to change this behaviour.\n\n@example\n\
+    ```\nimport type {CamelCase} from 'type-fest';\n\n// Simple\n\nconst someVariable:\
+    \ CamelCase<'foo-bar'> = 'fooBar';\nconst preserveConsecutiveUppercase: CamelCase<'foo-BAR-baz',\
+    \ {preserveConsecutiveUppercase: true}> = 'fooBARBaz';\n\n// Advanced\n\ntype\
+    \ CamelCasedProperties<T> = {\n\t[K in keyof T as CamelCase<K>]: T[K]\n};\n\n\
+    interface RawOptions {\n\t'dry-run': boolean;\n\t'full_family_name': string;\n\
+    \tfoo: number;\n\tBAR: string;\n\tQUZ_QUX: number;\n\t'OTHER-FIELD': boolean;\n\
+    }\n\nconst dbResult: CamelCasedProperties<RawOptions> = {\n\tdryRun: true,\n\t\
+    fullFamilyName: 'bar.js',\n\tfoo: 123,\n\tbar: 'foo',\n\tquzQux: 6,\n\totherField:\
+    \ false\n};\n```\n\n@category Change case\n@category Template literal\n*/\nexport\
+    \ type CamelCase<Type, Options extends CamelCaseOptions = {}> = Type extends string\n\
+    \t? string extends Type\n\t\t? Type\n\t\t: Uncapitalize<CamelCaseFromArray<\n\t\
+    \tWords<Type extends Uppercase<Type> ? Lowercase<Type> : Type>,\n\t\tApplyDefaultOptions<CamelCaseOptions,\
+    \ DefaultCamelCaseOptions, Options>\n\t\t>>\n\t: Type;\n\n\n### Dependency File:\
+    \ object.d.ts\nimport type {Simplify} from '../simplify';\nimport type {UnknownArray}\
+    \ from '../unknown-array';\nimport type {IsEqual} from '../is-equal';\nimport\
+    \ type {KeysOfUnion} from '../keys-of-union';\nimport type {RequiredKeysOf} from\
+    \ '../required-keys-of';\nimport type {Merge} from '../merge';\nimport type {IfAny}\
+    \ from '../if-any';\nimport type {IfNever} from '../if-never';\nimport type {OptionalKeysOf}\
+    \ from '../optional-keys-of';\nimport type {FilterDefinedKeys, FilterOptionalKeys}\
+    \ from './keys';\nimport type {NonRecursiveType} from './type';\nimport type {ToString}\
+    \ from './string';\n\n/**\nCreate an object type with the given key `<Key>` and\
+    \ value `<Value>`.\n\nIt will copy the prefix and optional status of the same\
+    \ key from the given object `CopiedFrom` into the result.\n\n@example\n```\ntype\
+    \ A = BuildObject<'a', string>;\n//=> {a: string}\n\n// Copy `readonly` and `?`\
+    \ from the key `a` of `{readonly a?: any}`\ntype B = BuildObject<'a', string,\
+    \ {readonly a?: any}>;\n//=> {readonly a?: string}\n```\n*/\nexport type BuildObject<Key\
+    \ extends PropertyKey, Value, CopiedFrom extends object = {}> =\n\tKey extends\
+    \ keyof CopiedFrom\n\t\t? Pick<{[_ in keyof CopiedFrom]: Value}, Key>\n\t\t: Key\
+    \ extends `${infer NumberKey extends number}`\n\t\t\t? NumberKey extends keyof\
+    \ CopiedFrom\n\t\t\t\t? Pick<{[_ in keyof CopiedFrom]: Value}, NumberKey>\n\t\t\
+    \t\t: {[_ in Key]: Value}\n\t\t\t: {[_ in Key]: Value};\n\n/**\nReturns a boolean\
+    \ for whether the given type is a plain key-value object.\n*/\nexport type IsPlainObject<T>\
+    \ =\n\tT extends NonRecursiveType | UnknownArray | ReadonlyMap<unknown, unknown>\
+    \ | ReadonlySet<unknown>\n\t\t? false\n\t\t: T extends object\n\t\t\t? true\n\t\
+    \t\t: false;\n\n/**\nExtract the object field type if T is an object and K is\
+    \ a key of T, return `never` otherwise.\n\nIt creates a type-safe way to access\
+    \ the member type of `unknown` type.\n*/\nexport type ObjectValue<T, K> =\n\t\
+    K extends keyof T\n\t\t? T[K]\n\t\t: ToString<K> extends keyof T\n\t\t\t? T[ToString<K>]\n\
+    \t\t\t: K extends `${infer NumberK extends number}`\n\t\t\t\t? NumberK extends\
+    \ keyof T\n\t\t\t\t\t? T[NumberK]\n\t\t\t\t\t: never\n\t\t\t\t: never;\n\n/**\n\
+    For an object T, if it has any properties that are a union with `undefined`, make\
+    \ those into optional properties instead.\n\n@example\n```\ntype User = {\n\t\
+    firstName: string;\n\tlastName: string | undefined;\n};\n\ntype OptionalizedUser\
+    \ = UndefinedToOptional<User>;\n//=> {\n// \tfirstName: string;\n// \tlastName?:\
+    \ string;\n// }\n```\n*/\nexport type UndefinedToOptional<T extends object> =\
+    \ Simplify<\n{\n\t// Property is not a union with `undefined`, keep it as-is.\n\
+    \t[Key in keyof Pick<T, FilterDefinedKeys<T>>]: T[Key];\n} & {\n\t// Property\
+    \ _is_ a union with defined value. Set as optional (via `?`) and remove `undefined`\
+    \ from the union.\n\t[Key in keyof Pick<T, FilterOptionalKeys<T>>]?: Exclude<T[Key],\
+    \ undefined>;\n}\n>;\n\n/**\nWorks similar to the built-in `Pick` utility type,\
+    \ except for the following differences:\n- Distributes over union types and allows\
+    \ picking keys from any member of the union type.\n- Primitives types are returned\
+    \ as-is.\n- Picks all keys if `Keys` is `any`.\n- Doesn't pick `number` from a\
+    \ `string` index signature.\n\n@example\n```\ntype ImageUpload = {\n\turl: string;\n\
+    \tsize: number;\n\tthumbnailUrl: string;\n};\n\ntype VideoUpload = {\n\turl: string;\n\
+    \tduration: number;\n\tencodingFormat: string;\n};\n\n// Distributes over union\
+    \ types and allows picking keys from any member of the union type\ntype MediaDisplay\
+    \ = HomomorphicPick<ImageUpload | VideoUpload, \"url\" | \"size\" | \"duration\"\
+    >;\n//=> {url: string; size: number} | {url: string; duration: number}\n\n// Primitive\
+    \ types are returned as-is\ntype Primitive = HomomorphicPick<string | number,\
+    \ 'toUpperCase' | 'toString'>;\n//=> string | number\n\n// Picks all keys if `Keys`\
+    \ is `any`\ntype Any = HomomorphicPick<{a: 1; b: 2} | {c: 3}, any>;\n//=> {a:\
+    \ 1; b: 2} | {c: 3}\n\n// Doesn't pick `number` from a `string` index signature\n\
+    type IndexSignature = HomomorphicPick<{[k: string]: unknown}, number>;\n//=> {}\n\
+    */\nexport type HomomorphicPick<T, Keys extends KeysOfUnion<T>> = {\n\t[P in keyof\
+    \ T as Extract<P, Keys>]: T[P]\n};\n\n/**\nExtract all possible values for a given\
+    \ key from a union of object types.\n\n@example\n```\ntype Statuses = ValueOfUnion<{\
+    \ id: 1, status: \"open\" } | { id: 2, status: \"closed\" }, \"status\">;\n//=>\
+    \ \"open\" | \"closed\"\n```\n*/\nexport type ValueOfUnion<Union, Key extends\
+    \ KeysOfUnion<Union>> =\n\tUnion extends unknown ? Key extends keyof Union ? Union[Key]\
+    \ : never : never;\n\n/**\nExtract all readonly keys from a union of object types.\n\
+    \n@example\n```\ntype User = {\n\t\treadonly id: string;\n\t\tname: string;\n\
+    };\n\ntype Post = {\n\t\treadonly id: string;\n\t\treadonly author: string;\n\t\
+    \tbody: string;\n};\n\ntype ReadonlyKeys = ReadonlyKeysOfUnion<User | Post>;\n\
+    //=> \"id\" | \"author\"\n```\n*/\nexport type ReadonlyKeysOfUnion<Union> = Union\
+    \ extends unknown ? keyof {\n\t[Key in keyof Union as IsEqual<{[K in Key]: Union[Key]},\
+    \ {readonly [K in Key]: Union[Key]}> extends true ? Key : never]: never\n} : never;\n\
+    \n/**\nMerges user specified options with default options.\n\n@example\n```\n\
+    type PathsOptions = {maxRecursionDepth?: number; leavesOnly?: boolean};\ntype\
+    \ DefaultPathsOptions = {maxRecursionDepth: 10; leavesOnly: false};\ntype SpecifiedOptions\
+    \ = {leavesOnly: true};\n\ntype Result = ApplyDefaultOptions<PathsOptions, DefaultPathsOptions,\
+    \ SpecifiedOptions>;\n//=> {maxRecursionDepth: 10; leavesOnly: true}\n```\n\n\
+    @example\n```\n// Complains if default values are not provided for optional options\n\
+    \ntype PathsOptions = {maxRecursionDepth?: number; leavesOnly?: boolean};\ntype\
+    \ DefaultPathsOptions = {maxRecursionDepth: 10};\ntype SpecifiedOptions = {};\n\
+    \ntype Result = ApplyDefaultOptions<PathsOptions, DefaultPathsOptions, SpecifiedOptions>;\n\
+    //                                              ~~~~~~~~~~~~~~~~~~~\n// Property\
+    \ 'leavesOnly' is missing in type 'DefaultPathsOptions' but required in type '{\
+    \ maxRecursionDepth: number; leavesOnly: boolean; }'.\n```\n\n@example\n```\n\
+    // Complains if an option's default type does not conform to the expected type\n\
+    \ntype PathsOptions = {maxRecursionDepth?: number; leavesOnly?: boolean};\ntype\
+    \ DefaultPathsOptions = {maxRecursionDepth: 10; leavesOnly: 'no'};\ntype SpecifiedOptions\
+    \ = {};\n\ntype Result = ApplyDefaultOptions<PathsOptions, DefaultPathsOptions,\
+    \ SpecifiedOptions>;\n//                                              ~~~~~~~~~~~~~~~~~~~\n\
+    // Types of property 'leavesOnly' are incompatible. Type 'string' is not assignable\
+    \ to type 'boolean'.\n```\n\n@example\n```\n// Complains if an option's specified\
+    \ type does not conform to the expected type\n\ntype PathsOptions = {maxRecursionDepth?:\
+    \ number; leavesOnly?: boolean};\ntype DefaultPathsOptions = {maxRecursionDepth:\
+    \ 10; leavesOnly: false};\ntype SpecifiedOptions = {leavesOnly: 'yes'};\n\ntype\
+    \ Result = ApplyDefaultOptions<PathsOptions, DefaultPathsOptions, SpecifiedOptions>;\n\
+    //                                                                   ~~~~~~~~~~~~~~~~\n\
+    // Types of property 'leavesOnly' are incompatible. Type 'string' is not assignable\
+    \ to type 'boolean'.\n```\n*/\nexport type ApplyDefaultOptions<\n\tOptions extends\
+    \ object,\n\tDefaults extends Simplify<Omit<Required<Options>, RequiredKeysOf<Options>>\
+    \ & Partial<Record<RequiredKeysOf<Options>, never>>>,\n\tSpecifiedOptions extends\
+    \ Options,\n> =\n\tIfAny<SpecifiedOptions, Defaults,\n\tIfNever<SpecifiedOptions,\
+    \ Defaults,\n\tSimplify<Merge<Defaults, {\n\t\t[Key in keyof SpecifiedOptions\n\
+    \t\tas Key extends OptionalKeysOf<Options>\n\t\t\t? Extract<SpecifiedOptions[Key],\
+    \ undefined> extends never\n\t\t\t\t? Key\n\t\t\t\t: never\n\t\t\t: Key\n\t\t\
+    ]: SpecifiedOptions[Key]\n\t}> & Required<Options>> // `& Required<Options>` ensures\
+    \ that `ApplyDefaultOptions<SomeOption, ...>` is always assignable to `Required<SomeOption>`\n\
+    \t>>;\n\nOutput the complete test file, code only, no explanations.\n### Time\n\
+    Current time: 2025-04-03 23:34:22\n"
+  role: user

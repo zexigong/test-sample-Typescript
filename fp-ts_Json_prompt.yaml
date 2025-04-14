@@ -1,0 +1,874 @@
+messages:
+- content: You are an AI agent expert in writing unit tests. Your task is to write
+    unit tests for the given code files of the repository. Make sure the tests can
+    be executed without lint or compile errors.
+  role: system
+- content: "### Task Information\nBased on the source code, write/rewrite tests to\
+    \ cover the source code.\nRepository: fp-ts\nSource File Path: src/Json.ts\nTest\
+    \ File Path: test/Json.ts\nProject Programming Language: typescript\nTesting Framework:\
+    \ vitest\n### Source File Content\n### Source File Content:\n/**\n * @since 2.10.0\n\
+    \ */\nimport { Either, tryCatch } from './Either'\nimport { identity } from './function'\n\
+    \n/**\n * @since 2.10.0\n */\nexport type Json = boolean | number | string | null\
+    \ | JsonArray | JsonRecord\n\n/**\n * @since 2.10.0\n */\nexport interface JsonRecord\
+    \ {\n  readonly [key: string]: Json\n}\n\n/**\n * @since 2.10.0\n */\nexport interface\
+    \ JsonArray extends ReadonlyArray<Json> {}\n\n/**\n * Converts a JavaScript Object\
+    \ Notation (JSON) string into a `Json` type.\n *\n * @example\n * import * as\
+    \ J from 'fp-ts/Json'\n * import * as E from 'fp-ts/Either'\n * import { pipe\
+    \ } from 'fp-ts/function'\n *\n * assert.deepStrictEqual(pipe('{\"a\":1}', J.parse),\
+    \ E.right({ a: 1 }))\n * assert.deepStrictEqual(pipe('{\"a\":}', J.parse), E.left(new\
+    \ SyntaxError(`Unexpected token '}', \"{\"a\":}\" is not valid JSON`)))\n *\n\
+    \ * @since 2.10.0\n */\nexport const parse = (s: string): Either<unknown, Json>\
+    \ => tryCatch(() => JSON.parse(s), identity)\n\n/**\n * Converts a JavaScript\
+    \ value to a JavaScript Object Notation (JSON) string.\n *\n * @example\n * import\
+    \ * as E from 'fp-ts/Either'\n * import * as J from 'fp-ts/Json'\n * import {\
+    \ pipe } from 'fp-ts/function'\n *\n * assert.deepStrictEqual(J.stringify({ a:\
+    \ 1 }), E.right('{\"a\":1}'))\n * const circular: any = { ref: null }\n * circular.ref\
+    \ = circular\n * assert.deepStrictEqual(\n *   pipe(\n *     J.stringify(circular),\n\
+    \ *     E.mapLeft(e => e instanceof Error && e.message.includes('Converting circular\
+    \ structure to JSON'))\n *   ),\n *   E.left(true)\n * )\n *\n *  @since 2.10.0\n\
+    \ */\nexport const stringify = <A>(a: A): Either<unknown, string> =>\n  tryCatch(()\
+    \ => {\n    const s = JSON.stringify(a)\n    if (typeof s !== 'string') {\n  \
+    \    throw new Error('Converting unsupported structure to JSON')\n    }\n    return\
+    \ s\n  }, identity)\n\n### Source File Dependency Files Content\n### Dependency\
+    \ File: Either.ts\n/**\n * ```ts\n * type Either<E, A> = Left<E> | Right<A>\n\
+    \ * ```\n *\n * Represents a value of one of two possible types (a disjoint union).\n\
+    \ *\n * An instance of `Either` is either an instance of `Left` or `Right`.\n\
+    \ *\n * A common use of `Either` is as an alternative to `Option` for dealing\
+    \ with possible missing values. In this usage,\n * `None` is replaced with a `Left`\
+    \ which can contain useful information. `Right` takes the place of `Some`. Convention\n\
+    \ * dictates that `Left` is used for failure and `Right` is used for success.\n\
+    \ *\n *\n * @example\n * import * as E from 'fp-ts/Either'\n * import { pipe }\
+    \ from 'fp-ts/function'\n *\n * const double = (n: number): number => n * 2\n\
+    \ *\n * export const imperative = (as: ReadonlyArray<number>): string => {\n *\
+    \   const head = (as: ReadonlyArray<number>): number => {\n *     if (as.length\
+    \ === 0) {\n *       throw new Error('empty array')\n *     }\n *     return as[0]\n\
+    \ *   }\n *   const inverse = (n: number): number => {\n *     if (n === 0) {\n\
+    \ *       throw new Error('cannot divide by zero')\n *     }\n *     return 1\
+    \ / n\n *   }\n *   try {\n *     return `Result is ${inverse(double(head(as)))}`\n\
+    \ *   } catch (err: any) {\n *     return `Error is ${err.message}`\n *   }\n\
+    \ * }\n *\n * export const functional = (as: ReadonlyArray<number>): string =>\
+    \ {\n *   const head = <A>(as: ReadonlyArray<A>): E.Either<string, A> =>\n * \
+    \    as.length === 0 ? E.left('empty array') : E.right(as[0])\n *   const inverse\
+    \ = (n: number): E.Either<string, number> =>\n *     n === 0 ? E.left('cannot\
+    \ divide by zero') : E.right(1 / n)\n *   return pipe(\n *     as,\n *     head,\n\
+    \ *     E.map(double),\n *     E.flatMap(inverse),\n *     E.match(\n *      \
+    \ (err) => `Error is ${err}`, // onLeft handler\n *       (head) => `Result is\
+    \ ${head}` // onRight handler\n *     )\n *   )\n * }\n *\n * assert.deepStrictEqual(imperative([1,\
+    \ 2, 3]), functional([1, 2, 3]))\n * assert.deepStrictEqual(imperative([]), functional([]))\n\
+    \ * assert.deepStrictEqual(imperative([0]), functional([0]))\n *\n * @since 2.0.0\n\
+    \ */\nimport { Alt2, Alt2C } from './Alt'\nimport { Applicative as ApplicativeHKT,\
+    \ Applicative2, Applicative2C, getApplicativeMonoid } from './Applicative'\nimport\
+    \ {\n  apFirst as apFirst_,\n  Apply2,\n  apS as apS_,\n  apSecond as apSecond_,\n\
+    \  getApplySemigroup as getApplySemigroup_\n} from './Apply'\nimport { Bifunctor2\
+    \ } from './Bifunctor'\nimport * as chainable from './Chain'\nimport { ChainRec2,\
+    \ ChainRec2C, tailRec } from './ChainRec'\nimport { Compactable2C } from './Compactable'\n\
+    import { Eq } from './Eq'\nimport { Extend2 } from './Extend'\nimport { Filterable2C\
+    \ } from './Filterable'\nimport { Foldable2 } from './Foldable'\nimport {\n  chainOptionK\
+    \ as chainOptionK_,\n  filterOrElse as filterOrElse_,\n  FromEither2,\n  fromOption\
+    \ as fromOption_,\n  fromOptionK as fromOptionK_,\n  fromPredicate as fromPredicate_\n\
+    } from './FromEither'\nimport { dual, flow, identity, LazyArg, pipe } from './function'\n\
+    import { as as as_, asUnit as asUnit_, bindTo as bindTo_, flap as flap_, Functor2,\
+    \ let as let__ } from './Functor'\nimport { HKT } from './HKT'\nimport * as _\
+    \ from './internal'\nimport { Monad2, Monad2C } from './Monad'\nimport { MonadThrow2,\
+    \ MonadThrow2C } from './MonadThrow'\nimport { Monoid } from './Monoid'\nimport\
+    \ { NonEmptyArray } from './NonEmptyArray'\nimport { Option } from './Option'\n\
+    import { Pointed2 } from './Pointed'\nimport { Predicate } from './Predicate'\n\
+    import { ReadonlyNonEmptyArray } from './ReadonlyNonEmptyArray'\nimport { Refinement\
+    \ } from './Refinement'\nimport { Semigroup } from './Semigroup'\nimport { Separated,\
+    \ separated } from './Separated'\nimport { Show } from './Show'\nimport { PipeableTraverse2,\
+    \ Traversable2 } from './Traversable'\nimport { wiltDefault, Witherable2C, witherDefault\
+    \ } from './Witherable'\n\n// -------------------------------------------------------------------------------------\n\
+    // model\n// -------------------------------------------------------------------------------------\n\
+    \n/**\n * @category model\n * @since 2.0.0\n */\nexport interface Left<E> {\n\
+    \  readonly _tag: 'Left'\n  readonly left: E\n}\n\n/**\n * @category model\n *\
+    \ @since 2.0.0\n */\nexport interface Right<A> {\n  readonly _tag: 'Right'\n \
+    \ readonly right: A\n}\n\n/**\n * @category model\n * @since 2.0.0\n */\nexport\
+    \ type Either<E, A> = Left<E> | Right<A>\n\n// -------------------------------------------------------------------------------------\n\
+    // constructors\n// -------------------------------------------------------------------------------------\n\
+    \n/**\n * Constructs a new `Either` holding a `Left` value. This usually represents\
+    \ a failure, due to the right-bias of this\n * structure.\n *\n * @category constructors\n\
+    \ * @since 2.0.0\n */\nexport const left: <E = never, A = never>(e: E) => Either<E,\
+    \ A> = _.left\n\n/**\n * Constructs a new `Either` holding a `Right` value. This\
+    \ usually represents a successful value due to the right bias\n * of this structure.\n\
+    \ *\n * @category constructors\n * @since 2.0.0\n */\nexport const right: <E =\
+    \ never, A = never>(a: A) => Either<E, A> = _.right\n\n/**\n * @category sequencing\n\
+    \ * @since 2.14.0\n */\nexport const flatMap: {\n  <A, E2, B>(f: (a: A) => Either<E2,\
+    \ B>): <E1>(ma: Either<E1, A>) => Either<E1 | E2, B>\n  <E1, A, E2, B>(ma: Either<E1,\
+    \ A>, f: (a: A) => Either<E2, B>): Either<E1 | E2, B>\n} = /*#__PURE__*/ dual(\n\
+    \  2,\n  <E1, A, E2, B>(ma: Either<E1, A>, f: (a: A) => Either<E2, B>): Either<E1\
+    \ | E2, B> => (isLeft(ma) ? ma : f(ma.right))\n)\n\nconst _map: Monad2<URI>['map']\
+    \ = (fa, f) => pipe(fa, map(f))\nconst _ap: Monad2<URI>['ap'] = (fab, fa) => pipe(fab,\
+    \ ap(fa))\n/* istanbul ignore next */\nconst _reduce: Foldable2<URI>['reduce']\
+    \ = (fa, b, f) => pipe(fa, reduce(b, f))\n/* istanbul ignore next */\nconst _foldMap:\
+    \ Foldable2<URI>['foldMap'] = (M) => (fa, f) => {\n  const foldMapM = foldMap(M)\n\
+    \  return pipe(fa, foldMapM(f))\n}\n/* istanbul ignore next */\nconst _reduceRight:\
+    \ Foldable2<URI>['reduceRight'] = (fa, b, f) => pipe(fa, reduceRight(b, f))\n\
+    const _traverse = <F>(\n  F: ApplicativeHKT<F>\n): (<E, A, B>(ta: Either<E, A>,\
+    \ f: (a: A) => HKT<F, B>) => HKT<F, Either<E, B>>) => {\n  const traverseF = traverse(F)\n\
+    \  return (ta, f) => pipe(ta, traverseF(f))\n}\nconst _bimap: Bifunctor2<URI>['bimap']\
+    \ = (fa, f, g) => pipe(fa, bimap(f, g))\nconst _mapLeft: Bifunctor2<URI>['mapLeft']\
+    \ = (fa, f) => pipe(fa, mapLeft(f))\n/* istanbul ignore next */\nconst _alt: Alt2<URI>['alt']\
+    \ = (fa, that) => pipe(fa, alt(that))\n/* istanbul ignore next */\nconst _extend:\
+    \ Extend2<URI>['extend'] = (wa, f) => pipe(wa, extend(f))\nconst _chainRec: ChainRec2<URI>['chainRec']\
+    \ = (a, f) =>\n  tailRec(f(a), (e) =>\n    isLeft(e) ? right(left(e.left)) : isLeft(e.right)\
+    \ ? left(f(e.right.left)) : right(right(e.right.right))\n  )\n\n/**\n * @category\
+    \ type lambdas\n * @since 2.0.0\n */\nexport const URI = 'Either'\n\n/**\n * @category\
+    \ type lambdas\n * @since 2.0.0\n */\nexport type URI = typeof URI\n\ndeclare\
+    \ module './HKT' {\n  interface URItoKind2<E, A> {\n    readonly [URI]: Either<E,\
+    \ A>\n  }\n}\n\n/**\n * @category instances\n * @since 2.0.0\n */\nexport const\
+    \ getShow = <E, A>(SE: Show<E>, SA: Show<A>): Show<Either<E, A>> => ({\n  show:\
+    \ (ma) => (isLeft(ma) ? `left(${SE.show(ma.left)})` : `right(${SA.show(ma.right)})`)\n\
+    })\n\n/**\n * @category instances\n * @since 2.0.0\n */\nexport const getEq =\
+    \ <E, A>(EL: Eq<E>, EA: Eq<A>): Eq<Either<E, A>> => ({\n  equals: (x, y) =>\n\
+    \    x === y || (isLeft(x) ? isLeft(y) && EL.equals(x.left, y.left) : isRight(y)\
+    \ && EA.equals(x.right, y.right))\n})\n\n/**\n * Semigroup returning the left-most\
+    \ non-`Left` value. If both operands are `Right`s then the inner values are\n\
+    \ * concatenated using the provided `Semigroup`\n *\n * @example\n * import {\
+    \ getSemigroup, left, right } from 'fp-ts/Either'\n * import { SemigroupSum }\
+    \ from 'fp-ts/number'\n *\n * const S = getSemigroup<string, number>(SemigroupSum)\n\
+    \ * assert.deepStrictEqual(S.concat(left('a'), left('b')), left('a'))\n * assert.deepStrictEqual(S.concat(left('a'),\
+    \ right(2)), right(2))\n * assert.deepStrictEqual(S.concat(right(1), left('b')),\
+    \ right(1))\n * assert.deepStrictEqual(S.concat(right(1), right(2)), right(3))\n\
+    \ *\n * @category instances\n * @since 2.0.0\n */\nexport const getSemigroup =\
+    \ <E, A>(S: Semigroup<A>): Semigroup<Either<E, A>> => ({\n  concat: (x, y) =>\
+    \ (isLeft(y) ? x : isLeft(x) ? y : right(S.concat(x.right, y.right)))\n})\n\n\
+    /**\n * Builds a `Compactable` instance for `Either` given `Monoid` for the left\
+    \ side.\n *\n * @category filtering\n * @since 2.10.0\n */\nexport const getCompactable\
+    \ = <E>(M: Monoid<E>): Compactable2C<URI, E> => {\n  const empty = left(M.empty)\n\
+    \  return {\n    URI,\n    _E: undefined as any,\n    compact: (ma) => (isLeft(ma)\
+    \ ? ma : ma.right._tag === 'None' ? empty : right(ma.right.value)),\n    separate:\
+    \ (ma) =>\n      isLeft(ma)\n        ? separated(ma, ma)\n        : isLeft(ma.right)\n\
+    \        ? separated(right(ma.right.left), empty)\n        : separated(empty,\
+    \ right(ma.right.right))\n  }\n}\n\n/**\n * Builds a `Filterable` instance for\
+    \ `Either` given `Monoid` for the left side\n *\n * @category filtering\n * @since\
+    \ 2.10.0\n */\nexport const getFilterable = <E>(M: Monoid<E>): Filterable2C<URI,\
+    \ E> => {\n  const empty = left(M.empty)\n\n  const { compact, separate } = getCompactable(M)\n\
+    \n  const filter = <A>(ma: Either<E, A>, predicate: Predicate<A>): Either<E, A>\
+    \ =>\n    isLeft(ma) ? ma : predicate(ma.right) ? ma : empty\n\n  const partition\
+    \ = <A>(ma: Either<E, A>, p: Predicate<A>): Separated<Either<E, A>, Either<E,\
+    \ A>> => {\n    return isLeft(ma)\n      ? separated(ma, ma)\n      : p(ma.right)\n\
+    \      ? separated(empty, right(ma.right))\n      : separated(right(ma.right),\
+    \ empty)\n  }\n\n  return {\n    URI,\n    _E: undefined as any,\n    map: _map,\n\
+    \    compact,\n    separate,\n    filter,\n    filterMap: (ma, f) => {\n     \
+    \ if (isLeft(ma)) {\n        return ma\n      }\n      const ob = f(ma.right)\n\
+    \      return ob._tag === 'None' ? empty : right(ob.value)\n    },\n    partition,\n\
+    \    partitionMap: (ma, f) => {\n      if (isLeft(ma)) {\n        return separated(ma,\
+    \ ma)\n      }\n      const e = f(ma.right)\n      return isLeft(e) ? separated(right(e.left),\
+    \ empty) : separated(empty, right(e.right))\n    }\n  }\n}\n\n/**\n * Builds `Witherable`\
+    \ instance for `Either` given `Monoid` for the left side\n *\n * @category filtering\n\
+    \ * @since 2.0.0\n */\nexport const getWitherable = <E>(M: Monoid<E>): Witherable2C<URI,\
+    \ E> => {\n  const F_ = getFilterable(M)\n  const C = getCompactable(M)\n  return\
+    \ {\n    URI,\n    _E: undefined as any,\n    map: _map,\n    compact: F_.compact,\n\
+    \    separate: F_.separate,\n    filter: F_.filter,\n    filterMap: F_.filterMap,\n\
+    \    partition: F_.partition,\n    partitionMap: F_.partitionMap,\n    traverse:\
+    \ _traverse,\n    sequence,\n    reduce: _reduce,\n    foldMap: _foldMap,\n  \
+    \  reduceRight: _reduceRight,\n    wither: witherDefault(Traversable, C),\n  \
+    \  wilt: wiltDefault(Traversable, C)\n  }\n}\n\n/**\n * The default [`Applicative`](#applicative)\
+    \ instance returns the first error, if you want to\n * get all errors you need\
+    \ to provide a way to concatenate them via a `Semigroup`.\n *\n * @example\n *\
+    \ import * as A from 'fp-ts/Apply'\n * import * as E from 'fp-ts/Either'\n * import\
+    \ { pipe } from 'fp-ts/function'\n * import * as S from 'fp-ts/Semigroup'\n *\
+    \ import * as string from 'fp-ts/string'\n *\n * const parseString = (u: unknown):\
+    \ E.Either<string, string> =>\n *   typeof u === 'string' ? E.right(u) : E.left('not\
+    \ a string')\n *\n * const parseNumber = (u: unknown): E.Either<string, number>\
+    \ =>\n *   typeof u === 'number' ? E.right(u) : E.left('not a number')\n *\n *\
+    \ interface Person {\n *   readonly name: string\n *   readonly age: number\n\
+    \ * }\n *\n * const parsePerson = (\n *   input: Record<string, unknown>\n * ):\
+    \ E.Either<string, Person> =>\n *   pipe(\n *     E.Do,\n *     E.apS('name',\
+    \ parseString(input.name)),\n *     E.apS('age', parseNumber(input.age))\n * \
+    \  )\n *\n * assert.deepStrictEqual(parsePerson({}), E.left('not a string')) //\
+    \ <= first error\n *\n * const Applicative = E.getApplicativeValidation(\n * \
+    \  pipe(string.Semigroup, S.intercalate(', '))\n * )\n *\n * const apS = A.apS(Applicative)\n\
+    \ *\n * const parsePersonAll = (\n *   input: Record<string, unknown>\n * ): E.Either<string,\
+    \ Person> =>\n *   pipe(\n *     E.Do,\n *     apS('name', parseString(input.name)),\n\
+    \ *     apS('age', parseNumber(input.age))\n *   )\n *\n * assert.deepStrictEqual(parsePersonAll({}),\
+    \ E.left('not a string, not a number')) // <= all errors\n *\n * @category error\
+    \ handling\n * @since 2.7.0\n */\nexport const getApplicativeValidation = <E>(SE:\
+    \ Semigroup<E>): Applicative2C<URI, E> => ({\n  URI,\n  _E: undefined as any,\n\
+    \  map: _map,\n  ap: (fab, fa) =>\n    isLeft(fab)\n      ? isLeft(fa)\n     \
+    \   ? left(SE.concat(fab.left, fa.left))\n        : fab\n      : isLeft(fa)\n\
+    \      ? fa\n      : right(fab.right(fa.right)),\n  of\n})\n\n/**\n * The default\
+    \ [`Alt`](#alt) instance returns the last error, if you want to\n * get all errors\
+    \ you need to provide a way to concatenate them via a `Semigroup`.\n *\n * @example\n\
+    \ * import * as E from 'fp-ts/Either'\n * import { pipe } from 'fp-ts/function'\n\
+    \ * import * as S from 'fp-ts/Semigroup'\n * import * as string from 'fp-ts/string'\n\
+    \ *\n * const parseString = (u: unknown): E.Either<string, string> =>\n *   typeof\
+    \ u === 'string' ? E.right(u) : E.left('not a string')\n *\n * const parseNumber\
+    \ = (u: unknown): E.Either<string, number> =>\n *   typeof u === 'number' ? E.right(u)\
+    \ : E.left('not a number')\n *\n * const parse = (u: unknown): E.Either<string,\
+    \ string | number> =>\n *   pipe(\n *     parseString(u),\n *     E.alt<string,\
+    \ string | number>(() => parseNumber(u))\n *   )\n *\n * assert.deepStrictEqual(parse(true),\
+    \ E.left('not a number')) // <= last error\n *\n * const Alt = E.getAltValidation(pipe(string.Semigroup,\
+    \ S.intercalate(', ')))\n *\n * const parseAll = (u: unknown): E.Either<string,\
+    \ string | number> =>\n *   Alt.alt<string | number>(parseString(u), () => parseNumber(u))\n\
+    \ *\n * assert.deepStrictEqual(parseAll(true), E.left('not a string, not a number'))\
+    \ // <= all errors\n *\n * @category error handling\n * @since 2.7.0\n */\nexport\
+    \ const getAltValidation = <E>(SE: Semigroup<E>): Alt2C<URI, E> => ({\n  URI,\n\
+    \  _E: undefined as any,\n  map: _map,\n  alt: (me, that) => {\n    if (isRight(me))\
+    \ {\n      return me\n    }\n    const ea = that()\n    return isLeft(ea) ? left(SE.concat(me.left,\
+    \ ea.left)) : ea\n  }\n})\n\n/**\n * @category mapping\n * @since 2.0.0\n */\n\
+    export const map: <A, B>(f: (a: A) => B) => <E>(fa: Either<E, A>) => Either<E,\
+    \ B> = (f) => (fa) =>\n  isLeft(fa) ? fa : right(f(fa.right))\n\n/**\n * @category\
+    \ instances\n * @since 2.7.0\n */\nexport const Functor: Functor2<URI> = {\n \
+    \ URI,\n  map: _map\n}\n\n/**\n * Maps the `Right` value of this `Either` to the\
+    \ specified constant value.\n *\n * @category mapping\n * @since 2.16.0\n */\n\
+    export const as: {\n  <A>(a: A): <E, _>(self: Either<E, _>) => Either<E, A>\n\
+    \  <E, _, A>(self: Either<E, _>, a: A): Either<E, A>\n} = dual(2, as_(Functor))\n\
+    \n/**\n * Maps the `Right` value of this `Either` to the void constant value.\n\
+    \ *\n * @category mapping\n * @since 2.16.0\n */\nexport const asUnit: <E, _>(self:\
+    \ Either<E, _>) => Either<E, void> = asUnit_(Functor)\n\n/**\n * @category constructors\n\
+    \ * @since 2.7.0\n */\nexport const of: <E = never, A = never>(a: A) => Either<E,\
+    \ A> = right\n\n/**\n * @category instances\n * @since 2.10.0\n */\nexport const\
+    \ Pointed: Pointed2<URI> = {\n  URI,\n  of\n}\n\n/**\n * Less strict version of\
+    \ [`ap`](#ap).\n *\n * The `W` suffix (short for **W**idening) means that the\
+    \ error types will be merged.\n *\n * @since 2.8.0\n */\nexport const apW: <E2,\
+    \ A>(fa: Either<E2, A>) => <E1, B>(fab: Either<E1, (a: A) => B>) => Either<E1\
+    \ | E2, B> =\n  (fa) => (fab) =>\n    isLeft(fab) ? fab : isLeft(fa) ? fa : right(fab.right(fa.right))\n\
+    \n/**\n * @since 2.0.0\n */\nexport const ap: <E, A>(fa: Either<E, A>) => <B>(fab:\
+    \ Either<E, (a: A) => B>) => Either<E, B> = apW\n\n/**\n * @category instances\n\
+    \ * @since 2.10.0\n */\nexport const Apply: Apply2<URI> = {\n  URI,\n  map: _map,\n\
+    \  ap: _ap\n}\n\n/**\n * @category instances\n * @since 2.7.0\n */\nexport const\
+    \ Applicative: Applicative2<URI> = {\n  URI,\n  map: _map,\n  ap: _ap,\n  of\n\
+    }\n\n/**\n * @category instances\n * @since 2.10.0\n */\nexport const Chain: chainable.Chain2<URI>\
+    \ = {\n  URI,\n  map: _map,\n  ap: _ap,\n  chain: flatMap\n}\n\n/**\n * @category\
+    \ instances\n * @since 2.7.0\n */\nexport const Monad: Monad2<URI> = {\n  URI,\n\
+    \  map: _map,\n  ap: _ap,\n  of,\n  chain: flatMap\n}\n\n/**\n * Left-associative\
+    \ fold of a structure.\n *\n * @example\n * import { pipe } from 'fp-ts/function'\n\
+    \ * import * as E from 'fp-ts/Either'\n *\n * const startWith = 'prefix'\n * const\
+    \ concat = (a: string, b: string) => `${a}:${b}`\n *\n * assert.deepStrictEqual(\n\
+    \ *   pipe(E.right('a'), E.reduce(startWith, concat)),\n *   'prefix:a'\n * )\n\
+    \ *\n * assert.deepStrictEqual(\n *   pipe(E.left('e'), E.reduce(startWith, concat)),\n\
+    \ *   'prefix'\n * )\n *\n * @category folding\n * @since 2.0.0\n */\nexport const\
+    \ reduce: <A, B>(b: B, f: (b: B, a: A) => B) => <E>(fa: Either<E, A>) => B = (b,\
+    \ f) => (fa) =>\n  isLeft(fa) ? b : f(b, fa.right)\n\n/**\n * Map each element\
+    \ of the structure to a monoid, and combine the results.\n *\n * @example\n *\
+    \ import { pipe } from 'fp-ts/function'\n * import * as E from 'fp-ts/Either'\n\
+    \ * import * as S from 'fp-ts/string'\n *\n * const yell = (a: string) => `${a}!`\n\
+    \ *\n * assert.deepStrictEqual(\n *   pipe(E.right('a'), E.foldMap(S.Monoid)(yell)),\n\
+    \ *   'a!'\n * )\n *\n * assert.deepStrictEqual(\n *   pipe(E.left('e'), E.foldMap(S.Monoid)(yell)),\n\
+    \ *   S.Monoid.empty\n * )\n *\n * @category folding\n * @since 2.0.0\n */\nexport\
+    \ const foldMap: <M>(M: Monoid<M>) => <A>(f: (a: A) => M) => <E>(fa: Either<E,\
+    \ A>) => M = (M) => (f) => (fa) =>\n  isLeft(fa) ? M.empty : f(fa.right)\n\n/**\n\
+    \ * Right-associative fold of a structure.\n *\n * @example\n * import { pipe\
+    \ } from 'fp-ts/function'\n * import * as E from 'fp-ts/Either'\n *\n * const\
+    \ startWith = 'postfix'\n * const concat = (a: string, b: string) => `${a}:${b}`\n\
+    \ *\n * assert.deepStrictEqual(\n *   pipe(E.right('a'), E.reduceRight(startWith,\
+    \ concat)),\n *   'a:postfix'\n * )\n *\n * assert.deepStrictEqual(\n *   pipe(E.left('e'),\
+    \ E.reduceRight(startWith, concat)),\n *   'postfix'\n * )\n *\n * @category folding\n\
+    \ * @since 2.0.0\n */\nexport const reduceRight: <A, B>(b: B, f: (a: A, b: B)\
+    \ => B) => <E>(fa: Either<E, A>) => B = (b, f) => (fa) =>\n  isLeft(fa) ? b :\
+    \ f(fa.right, b)\n\n/**\n * @category instances\n * @since 2.7.0\n */\nexport\
+    \ const Foldable: Foldable2<URI> = {\n  URI,\n  reduce: _reduce,\n  foldMap: _foldMap,\n\
+    \  reduceRight: _reduceRight\n}\n\n/**\n * Map each element of a structure to\
+    \ an action, evaluate these actions from left to right, and collect the results.\n\
+    \ *\n * @example\n * import { pipe } from 'fp-ts/function'\n * import * as RA\
+    \ from 'fp-ts/ReadonlyArray'\n * import * as E from 'fp-ts/Either'\n * import\
+    \ * as O from 'fp-ts/Option'\n *\n * assert.deepStrictEqual(\n *   pipe(E.right(['a']),\
+    \ E.traverse(O.Applicative)(RA.head)),\n *   O.some(E.right('a'))\n *  )\n *\n\
+    \ * assert.deepStrictEqual(\n *   pipe(E.right([]), E.traverse(O.Applicative)(RA.head)),\n\
+    \ *   O.none\n * )\n *\n * @category traversing\n * @since 2.6.3\n */\nexport\
+    \ const traverse: PipeableTraverse2<URI> =\n  <F>(F: ApplicativeHKT<F>) =>\n \
+    \ <A, B>(f: (a: A) => HKT<F, B>) =>\n  <E>(ta: Either<E, A>): HKT<F, Either<E,\
+    \ B>> =>\n    isLeft(ta) ? F.of(left(ta.left)) : F.map<B, Either<E, B>>(f(ta.right),\
+    \ right)\n\n/**\n * Evaluate each monadic action in the structure from left to\
+    \ right, and collect the results.\n *\n * @example\n * import { pipe } from 'fp-ts/function'\n\
+    \ * import * as E from 'fp-ts/Either'\n * import * as O from 'fp-ts/Option'\n\
+    \ *\n * assert.deepStrictEqual(\n *   pipe(E.right(O.some('a')), E.sequence(O.Applicative)),\n\
+    \ *   O.some(E.right('a'))\n *  )\n *\n * assert.deepStrictEqual(\n *   pipe(E.right(O.none),\
+    \ E.sequence(O.Applicative)),\n *   O.none\n * )\n *\n * @category traversing\n\
+    \ * @since 2.6.3\n */\nexport const sequence: Traversable2<URI>['sequence'] =\n\
+    \  <F>(F: ApplicativeHKT<F>) =>\n  <E, A>(ma: Either<E, HKT<F, A>>): HKT<F, Either<E,\
+    \ A>> => {\n    return isLeft(ma) ? F.of(left(ma.left)) : F.map<A, Either<E, A>>(ma.right,\
+    \ right)\n  }\n\n/**\n * @category instances\n * @since 2.7.0\n */\nexport const\
+    \ Traversable: Traversable2<URI> = {\n  URI,\n  map: _map,\n  reduce: _reduce,\n\
+    \  foldMap: _foldMap,\n  reduceRight: _reduceRight,\n  traverse: _traverse,\n\
+    \  sequence\n}\n\n/**\n * Map a pair of functions over the two type arguments\
+    \ of the bifunctor.\n *\n * @category mapping\n * @since 2.0.0\n */\nexport const\
+    \ bimap: <E, G, A, B>(f: (e: E) => G, g: (a: A) => B) => (fa: Either<E, A>) =>\
+    \ Either<G, B> =\n  (f, g) => (fa) =>\n    isLeft(fa) ? left(f(fa.left)) : right(g(fa.right))\n\
+    \n/**\n * Map a function over the first type argument of a bifunctor.\n *\n *\
+    \ @category error handling\n * @since 2.0.0\n */\nexport const mapLeft: <E, G>(f:\
+    \ (e: E) => G) => <A>(fa: Either<E, A>) => Either<G, A> = (f) => (fa) =>\n  isLeft(fa)\
+    \ ? left(f(fa.left)) : fa\n\n/**\n * @category instances\n * @since 2.7.0\n */\n\
+    export const Bifunctor: Bifunctor2<URI> = {\n  URI,\n  bimap: _bimap,\n  mapLeft:\
+    \ _mapLeft\n}\n\n/**\n * Less strict version of [`alt`](#alt).\n *\n * The `W`\
+    \ suffix (short for **W**idening) means that the error and the return types will\
+    \ be merged.\n *\n * @category error handling\n * @since 2.9.0\n */\nexport const\
+    \ altW: <E2, B>(that: LazyArg<Either<E2, B>>) => <E1, A>(fa: Either<E1, A>) =>\
+    \ Either<E2, A | B> =\n  (that) => (fa) =>\n    isLeft(fa) ? that() : fa\n\n/**\n\
+    \ * Identifies an associative operation on a type constructor. It is similar to\
+    \ `Semigroup`, except that it applies to\n * types of kind `* -> *`.\n *\n * In\
+    \ case of `Either` returns the left-most non-`Left` value (or the right-most `Left`\
+    \ value if both values are `Left`).\n *\n * | x        | y        | pipe(x, alt(()\
+    \ => y) |\n * | -------- | -------- | -------------------- |\n * | left(a)  |\
+    \ left(b)  | left(b)              |\n * | left(a)  | right(2) | right(2)     \
+    \        |\n * | right(1) | left(b)  | right(1)             |\n * | right(1) |\
+    \ right(2) | right(1)             |\n *\n * @example\n * import * as E from 'fp-ts/Either'\n\
+    \ * import { pipe } from 'fp-ts/function'\n *\n * assert.deepStrictEqual(\n *\
+    \   pipe(\n *     E.left('a'),\n *     E.alt(() => E.left('b'))\n *   ),\n * \
+    \  E.left('b')\n * )\n * assert.deepStrictEqual(\n *   pipe(\n *     E.left('a'),\n\
+    \ *     E.alt(() => E.right(2))\n *   ),\n *   E.right(2)\n * )\n * assert.deepStrictEqual(\n\
+    \ *   pipe(\n *     E.right(1),\n *     E.alt(() => E.left('b'))\n *   ),\n *\
+    \   E.right(1)\n * )\n * assert.deepStrictEqual(\n *   pipe(\n *     E.right(1),\n\
+    \ *     E.alt(() => E.right(2))\n *   ),\n *   E.right(1)\n * )\n *\n * @category\
+    \ error handling\n * @since 2.0.0\n */\nexport const alt: <E, A>(that: LazyArg<Either<E,\
+    \ A>>) => (fa: Either<E, A>) => Either<E, A> = altW\n\n/**\n * @category instances\n\
+    \ * @since 2.7.0\n */\nexport const Alt: Alt2<URI> = {\n  URI,\n  map: _map,\n\
+    \  alt: _alt\n}\n\n/**\n * @since 2.0.0\n */\nexport const extend: <E, A, B>(f:\
+    \ (wa: Either<E, A>) => B) => (wa: Either<E, A>) => Either<E, B> = (f) => (wa)\
+    \ =>\n  isLeft(wa) ? wa : right(f(wa))\n\n/**\n * @category instances\n * @since\
+    \ 2.7.0\n */\nexport const Extend: Extend2<URI> = {\n  URI,\n  map: _map,\n  extend:\
+    \ _extend\n}\n\n/**\n * @category instances\n * @since 2.7.0\n */\nexport const\
+    \ ChainRec: ChainRec2<URI> = {\n  URI,\n  map: _map,\n  ap: _ap,\n  chain: flatMap,\n\
+    \  chainRec: _chainRec\n}\n\n/**\n * @since 2.6.3\n */\nexport const throwError:\
+    \ MonadThrow2<URI>['throwError'] = left\n\n/**\n * @category instances\n * @since\
+    \ 2.7.0\n */\nexport const MonadThrow: MonadThrow2<URI> = {\n  URI,\n  map: _map,\n\
+    \  ap: _ap,\n  of,\n  chain: flatMap,\n  throwError\n}\n\n/**\n * @category instances\n\
+    \ * @since 2.10.0\n */\nexport const FromEither: FromEither2<URI> = {\n  URI,\n\
+    \  fromEither: identity\n}\n\n/**\n * @example\n * import { fromPredicate, left,\
+    \ right } from 'fp-ts/Either'\n * import { pipe } from 'fp-ts/function'\n *\n\
+    \ * assert.deepStrictEqual(\n *   pipe(\n *     1,\n *     fromPredicate(\n *\
+    \       (n) => n > 0,\n *       () => 'error'\n *     )\n *   ),\n *   right(1)\n\
+    \ * )\n * assert.deepStrictEqual(\n *   pipe(\n *     -1,\n *     fromPredicate(\n\
+    \ *       (n) => n > 0,\n *       () => 'error'\n *     )\n *   ),\n *   left('error')\n\
+    \ * )\n *\n * @category lifting\n * @since 2.0.0\n */\nexport const fromPredicate:\
+    \ {\n  <A, B extends A, E>(refinement: Refinement<A, B>, onFalse: (a: A) => E):\
+    \ (a: A) => Either<E, B>\n  <A, E>(predicate: Predicate<A>, onFalse: (a: A) =>\
+    \ E): <B extends A>(b: B) => Either<E, B>\n  <A, E>(predicate: Predicate<A>, onFalse:\
+    \ (a: A) => E): (a: A) => Either<E, A>\n} = /*#__PURE__*/ fromPredicate_(FromEither)\n\
+    \n// -------------------------------------------------------------------------------------\n\
+    // conversions\n// -------------------------------------------------------------------------------------\n\
+    \n/**\n * @example\n * import * as E from 'fp-ts/Either'\n * import { pipe } from\
+    \ 'fp-ts/function'\n * import * as O from 'fp-ts/Option'\n *\n * assert.deepStrictEqual(\n\
+    \ *   pipe(\n *     O.some(1),\n *     E.fromOption(() => 'error')\n *   ),\n\
+    \ *   E.right(1)\n * )\n * assert.deepStrictEqual(\n *   pipe(\n *     O.none,\n\
+    \ *     E.fromOption(() => 'error')\n *   ),\n *   E.left('error')\n * )\n *\n\
+    \ * @category conversions\n * @since 2.0.0\n */\nexport const fromOption: <E>(onNone:\
+    \ LazyArg<E>) => <A>(fa: Option<A>) => Either<E, A> =\n  /*#__PURE__*/ fromOption_(FromEither)\n\
+    \n// -------------------------------------------------------------------------------------\n\
+    // refinements\n// -------------------------------------------------------------------------------------\n\
+    \n/**\n * Returns `true` if the either is an instance of `Left`, `false` otherwise.\n\
+    \ *\n * @category refinements\n * @since 2.0.0\n */\nexport const isLeft: <E>(ma:\
+    \ Either<E, unknown>) => ma is Left<E> = _.isLeft\n\n/**\n * Returns `true` if\
+    \ the either is an instance of `Right`, `false` otherwise.\n *\n * @category refinements\n\
+    \ * @since 2.0.0\n */\nexport const isRight: <A>(ma: Either<unknown, A>) => ma\
+    \ is Right<A> = _.isRight\n\n/**\n * Less strict version of [`match`](#match).\n\
+    \ *\n * The `W` suffix (short for **W**idening) means that the handler return\
+    \ types will be merged.\n *\n * @category pattern matching\n * @since 2.10.0\n\
+    \ */\nexport const matchW =\n  <E, B, A, C>(onLeft: (e: E) => B, onRight: (a:\
+    \ A) => C) =>\n  (ma: Either<E, A>): B | C =>\n    isLeft(ma) ? onLeft(ma.left)\
+    \ : onRight(ma.right)\n\n/**\n * Alias of [`matchW`](#matchw).\n *\n * @category\
+    \ pattern matching\n * @since 2.10.0\n */\nexport const foldW = matchW\n\n/**\n\
+    \ * Takes two functions and an `Either` value, if the value is a `Left` the inner\
+    \ value is applied to the first function,\n * if the value is a `Right` the inner\
+    \ value is applied to the second function.\n *\n * @example\n * import { match,\
+    \ left, right } from 'fp-ts/Either'\n * import { pipe } from 'fp-ts/function'\n\
+    \ *\n * function onLeft(errors: Array<string>): string {\n *   return `Errors:\
+    \ ${errors.join(', ')}`\n * }\n *\n * function onRight(value: number): string\
+    \ {\n *   return `Ok: ${value}`\n * }\n *\n * assert.strictEqual(\n *   pipe(\n\
+    \ *     right(1),\n *     match(onLeft, onRight)\n *   ),\n *   'Ok: 1'\n * )\n\
+    \ * assert.strictEqual(\n *   pipe(\n *     left(['error 1', 'error 2']),\n *\
+    \     match(onLeft, onRight)\n *   ),\n *   'Errors: error 1, error 2'\n * )\n\
+    \ *\n * @category pattern matching\n * @since 2.10.0\n */\nexport const match:\
+    \ <E, A, B>(onLeft: (e: E) => B, onRight: (a: A) => B) => (ma: Either<E, A>) =>\
+    \ B = matchW\n\n/**\n * Alias of [`match`](#match).\n *\n * @category pattern\
+    \ matching\n * @since 2.0.0\n */\nexport const fold: <E, A, B>(onLeft: (e: E)\
+    \ => B, onRight: (a: A) => B) => (ma: Either<E, A>) => B = match\n\n/**\n * Less\
+    \ strict version of [`getOrElse`](#getorelse).\n *\n * The `W` suffix (short for\
+    \ **W**idening) means that the handler return type will be merged.\n *\n * @category\
+    \ error handling\n * @since 2.6.0\n */\nexport const getOrElseW =\n  <E, B>(onLeft:\
+    \ (e: E) => B) =>\n  <A>(ma: Either<E, A>): A | B =>\n    isLeft(ma) ? onLeft(ma.left)\
+    \ : ma.right\n\n/**\n * Returns the wrapped value if it's a `Right` or a default\
+    \ value if is a `Left`.\n *\n * @example\n * import { getOrElse, left, right }\
+    \ from 'fp-ts/Either'\n * import { pipe } from 'fp-ts/function'\n *\n * assert.deepStrictEqual(\n\
+    \ *   pipe(\n *     right(1),\n *     getOrElse(() => 0)\n *   ),\n *   1\n *\
+    \ )\n * assert.deepStrictEqual(\n *   pipe(\n *     left('error'),\n *     getOrElse(()\
+    \ => 0)\n *   ),\n *   0\n * )\n *\n * @category error handling\n * @since 2.0.0\n\
+    \ */\nexport const getOrElse: <E, A>(onLeft: (e: E) => A) => (ma: Either<E, A>)\
+    \ => A = getOrElseW\n\n// -------------------------------------------------------------------------------------\n\
+    // combinators\n// -------------------------------------------------------------------------------------\n\
+    \n/**\n * @category mapping\n * @since 2.10.0\n */\nexport const flap = /*#__PURE__*/\
+    \ flap_(Functor)\n\n/**\n * Combine two effectful actions, keeping only the result\
+    \ of the first.\n *\n * @since 2.0.0\n */\nexport const apFirst = /*#__PURE__*/\
+    \ apFirst_(Apply)\n\n/**\n * Less strict version of [`apFirst`](#apfirst)\n *\n\
+    \ * The `W` suffix (short for **W**idening) means that the error types will be\
+    \ merged.\n *\n * @since 2.12.0\n */\nexport const apFirstW: <E2, B>(second: Either<E2,\
+    \ B>) => <E1, A>(first: Either<E1, A>) => Either<E1 | E2, A> =\n  apFirst as any\n\
+    \n/**\n * Combine two effectful actions, keeping only the result of the second.\n\
+    \ *\n * @since 2.0.0\n */\nexport const apSecond = /*#__PURE__*/ apSecond_(Apply)\n\
+    \n/**\n * Less strict version of [`apSecond`](#apsecond)\n *\n * The `W` suffix\
+    \ (short for **W**idening) means that the error types will be merged.\n *\n *\
+    \ @since 2.12.0\n */\nexport const apSecondW: <E2, B>(second: Either<E2, B>) =>\
+    \ <E1, A>(first: Either<E1, A>) => Either<E1 | E2, B> =\n  apSecond as any\n\n\
+    /**\n * Composes computations in sequence, using the return value of one computation\
+    \ to determine the next computation and\n * keeping only the result of the first.\n\
+    \ *\n * @category combinators\n * @since 2.15.0\n */\nexport const tap: {\n  <E1,\
+    \ A, E2, _>(self: Either<E1, A>, f: (a: A) => Either<E2, _>): Either<E1 | E2,\
+    \ A>\n  <A, E2, _>(f: (a: A) => Either<E2, _>): <E1>(self: Either<E1, A>) => Either<E2\
+    \ | E1, A>\n} = /*#__PURE__*/ dual(2, chainable.tap(Chain))\n\n/**\n * Less strict\
+    \ version of [`flatten`](#flatten).\n *\n * The `W` suffix (short for **W**idening)\
+    \ means that the error types will be merged.\n *\n * @category sequencing\n *\
+    \ @since 2.11.0\n */\nexport const flattenW: <E1, E2, A>(mma: Either<E1, Either<E2,\
+    \ A>>) => Either<E1 | E2, A> =\n  /*#__PURE__*/ flatMap(identity)\n\n/**\n * The\
+    \ `flatten` function is the conventional monad join operator. It is used to remove\
+    \ one level of monadic structure, projecting its bound argument into the outer\
+    \ level.\n *\n * @example\n * import * as E from 'fp-ts/Either'\n *\n * assert.deepStrictEqual(E.flatten(E.right(E.right('a'))),\
+    \ E.right('a'))\n * assert.deepStrictEqual(E.flatten(E.right(E.left('e'))), E.left('e'))\n\
+    \ * assert.deepStrictEqual(E.flatten(E.left('e')), E.left('e'))\n *\n * @category\
+    \ sequencing\n * @since 2.0.0\n */\nexport const flatten: <E, A>(mma: Either<E,\
+    \ Either<E, A>>) => Either<E, A> = flattenW\n\n/**\n * @since 2.0.0\n */\nexport\
+    \ const duplicate: <E, A>(ma: Either<E, A>) => Either<E, Either<E, A>> = /*#__PURE__*/\
+    \ extend(identity)\n\n/**\n * Use `liftOption`.\n *\n * @category legacy\n * @since\
+    \ 2.10.0\n */\nexport const fromOptionK: <E>(\n  onNone: LazyArg<E>\n) => <A extends\
+    \ ReadonlyArray<unknown>, B>(f: (...a: A) => Option<B>) => (...a: A) => Either<E,\
+    \ B> =\n  /*#__PURE__*/ fromOptionK_(FromEither)\n\n/**\n * Use `flatMapOption`.\n\
+    \ *\n * @category legacy\n * @since 2.11.0\n */\nexport const chainOptionK: <E>(\n\
+    \  onNone: LazyArg<E>\n) => <A, B>(f: (a: A) => Option<B>) => (ma: Either<E, A>)\
+    \ => Either<E, B> = /*#__PURE__*/ chainOptionK_(\n  FromEither,\n  Chain\n)\n\n\
+    /**\n * Use `flatMapOption`.\n *\n * @category legacy\n * @since 2.13.2\n */\n\
+    export const chainOptionKW: <E2>(\n  onNone: LazyArg<E2>\n) => <A, B>(f: (a: A)\
+    \ => Option<B>) => <E1>(ma: Either<E1, A>) => Either<E1 | E2, B> = chainOptionK\
+    \ as any\n\n/** @internal */\ninterface EitherTypeLambda extends _.TypeLambda\
+    \ {\n  readonly type: Either<this['Out1'], this['Target']>\n}\n\n/** @internal\
+    \ */\nconst _FromEither: _.FromEither<EitherTypeLambda> = {\n  fromEither: FromEither.fromEither\n\
+    }\n\n/**\n * @category lifting\n * @since 2.15.0\n */\nexport const liftNullable:\
+    \ <A extends ReadonlyArray<unknown>, B, E>(\n  f: (...a: A) => B | null | undefined,\n\
+    \  onNullable: (...a: A) => E\n) => (...a: A) => Either<E, NonNullable<B>> = /*#__PURE__*/\
+    \ _.liftNullable(_FromEither)\n\n/**\n * @category lifting\n * @since 2.15.0\n\
+    \ */\nexport const liftOption: <A extends ReadonlyArray<unknown>, B, E>(\n  f:\
+    \ (...a: A) => Option<B>,\n  onNone: (...a: A) => E\n) => (...a: A) => Either<E,\
+    \ B> = /*#__PURE__*/ _.liftOption(_FromEither)\n\n/** @internal */\nconst _FlatMap:\
+    \ _.FlatMap<EitherTypeLambda> = {\n  flatMap\n}\n\n/**\n * @category sequencing\n\
+    \ * @since 2.15.0\n */\nexport const flatMapNullable: {\n  <A, B, E2>(f: (a: A)\
+    \ => B | null | undefined, onNullable: (a: A) => E2): <E1>(\n    self: Either<E1,\
+    \ A>\n  ) => Either<E2 | E1, NonNullable<B>>\n  <E1, A, B, E2>(self: Either<E1,\
+    \ A>, f: (a: A) => B | null | undefined, onNullable: (a: A) => E2): Either<\n\
+    \    E1 | E2,\n    NonNullable<B>\n  >\n} = /*#__PURE__*/ _.flatMapNullable(_FromEither,\
+    \ _FlatMap)\n\n/**\n * @category sequencing\n * @since 2.15.0\n */\nexport const\
+    \ flatMapOption: {\n  <A, B, E2>(f: (a: A) => Option<B>, onNone: (a: A) => E2):\
+    \ <E1>(self: Either<E1, A>) => Either<E2 | E1, B>\n  <E1, A, B, E2>(self: Either<E1,\
+    \ A>, f: (a: A) => Option<B>, onNone: (a: A) => E2): Either<E1 | E2, B>\n} = /*#__PURE__*/\
+    \ _.flatMapOption(_FromEither, _FlatMap)\n\n/**\n * @example\n * import * as E\
+    \ from 'fp-ts/Either'\n * import { pipe } from 'fp-ts/function'\n *\n * assert.deepStrictEqual(\n\
+    \ *   pipe(\n *     E.right(1),\n *     E.filterOrElse(\n *       (n) => n > 0,\n\
+    \ *       () => 'error'\n *     )\n *   ),\n *   E.right(1)\n * )\n * assert.deepStrictEqual(\n\
+    \ *   pipe(\n *     E.right(-1),\n *     E.filterOrElse(\n *       (n) => n >\
+    \ 0,\n *       () => 'error'\n *     )\n *   ),\n *   E.left('error')\n * )\n\
+    \ * assert.deepStrictEqual(\n *   pipe(\n *     E.left('a'),\n *     E.filterOrElse(\n\
+    \ *       (n) => n > 0,\n *       () => 'error'\n *     )\n *   ),\n *   E.left('a')\n\
+    \ * )\n *\n * @category filtering\n * @since 2.0.0\n */\nexport const filterOrElse:\
+    \ {\n  <A, B extends A, E>(refinement: Refinement<A, B>, onFalse: (a: A) => E):\
+    \ (self: Either<E, A>) => Either<E, B>\n  <A, E>(predicate: Predicate<A>, onFalse:\
+    \ (a: A) => E): <B extends A>(self: Either<E, B>) => Either<E, B>\n  <A, E>(predicate:\
+    \ Predicate<A>, onFalse: (a: A) => E): (self: Either<E, A>) => Either<E, A>\n\
+    } = /*#__PURE__*/ filterOrElse_(FromEither, Chain)\n\n/**\n * Less strict version\
+    \ of [`filterOrElse`](#filterorelse).\n *\n * The `W` suffix (short for **W**idening)\
+    \ means that the error types will be merged.\n *\n * @category filtering\n * @since\
+    \ 2.9.0\n */\nexport const filterOrElseW: {\n  <A, B extends A, E2>(refinement:\
+    \ Refinement<A, B>, onFalse: (a: A) => E2): <E1>(\n    ma: Either<E1, A>\n  )\
+    \ => Either<E1 | E2, B>\n  <A, E2>(predicate: Predicate<A>, onFalse: (a: A) =>\
+    \ E2): <E1, B extends A>(mb: Either<E1, B>) => Either<E1 | E2, B>\n  <A, E2>(predicate:\
+    \ Predicate<A>, onFalse: (a: A) => E2): <E1>(ma: Either<E1, A>) => Either<E1 |\
+    \ E2, A>\n} = filterOrElse\n\n/**\n * Returns a `Right` if is a `Left` (and vice\
+    \ versa).\n *\n * @since 2.0.0\n */\nexport const swap = <E, A>(ma: Either<E,\
+    \ A>): Either<A, E> => (isLeft(ma) ? right(ma.left) : left(ma.right))\n\n/**\n\
+    \ * Less strict version of [`orElse`](#orelse).\n *\n * The `W` suffix (short\
+    \ for **W**idening) means that the return types will be merged.\n *\n * @category\
+    \ error handling\n * @since 2.10.0\n */\nexport const orElseW =\n  <E1, E2, B>(onLeft:\
+    \ (e: E1) => Either<E2, B>) =>\n  <A>(ma: Either<E1, A>): Either<E2, A | B> =>\n\
+    \    isLeft(ma) ? onLeft(ma.left) : ma\n\n/**\n * Useful for recovering from errors.\n\
+    \ *\n * @category error handling\n * @since 2.0.0\n */\nexport const orElse: <E1,\
+    \ A, E2>(onLeft: (e: E1) => Either<E2, A>) => (ma: Either<E1, A>) => Either<E2,\
+    \ A> = orElseW\n\n/**\n * Takes a default and a nullable value, if the value is\
+    \ not nully, turn it into a `Right`, if the value is nully use\n * the provided\
+    \ default as a `Left`.\n *\n * @example\n * import { fromNullable, left, right\
+    \ } from 'fp-ts/Either'\n *\n * const parse = fromNullable('nully')\n *\n * assert.deepStrictEqual(parse(1),\
+    \ right(1))\n * assert.deepStrictEqual(parse(null), left('nully'))\n *\n * @category\
+    \ conversions\n * @since 2.0.0\n */\nexport const fromNullable =\n  <E>(e: E)\
+    \ =>\n  <A>(a: A): Either<E, NonNullable<A>> =>\n    a == null ? left(e) : right(a\
+    \ as NonNullable<A>)\n\n/**\n * Constructs a new `Either` from a function that\
+    \ might throw.\n *\n * See also [`tryCatchK`](#trycatchk).\n *\n * @example\n\
+    \ * import * as E from 'fp-ts/Either'\n *\n * const unsafeHead = <A>(as: ReadonlyArray<A>):\
+    \ A => {\n *   if (as.length > 0) {\n *     return as[0]\n *   } else {\n *  \
+    \   throw new Error('empty array')\n *   }\n * }\n *\n * const head = <A>(as:\
+    \ ReadonlyArray<A>): E.Either<Error, A> =>\n *   E.tryCatch(() => unsafeHead(as),\
+    \ e => (e instanceof Error ? e : new Error('unknown error')))\n *\n * assert.deepStrictEqual(head([]),\
+    \ E.left(new Error('empty array')))\n * assert.deepStrictEqual(head([1, 2, 3]),\
+    \ E.right(1))\n *\n * @category interop\n * @since 2.0.0\n */\nexport const tryCatch\
+    \ = <E, A>(f: LazyArg<A>, onThrow: (e: unknown) => E): Either<E, A> => {\n  try\
+    \ {\n    return right(f())\n  } catch (e) {\n    return left(onThrow(e))\n  }\n\
+    }\n\n/**\n * Converts a function that may throw to one returning a `Either`.\n\
+    \ *\n * @category interop\n * @since 2.10.0\n */\nexport const tryCatchK =\n \
+    \ <A extends ReadonlyArray<unknown>, B, E>(\n    f: (...a: A) => B,\n    onThrow:\
+    \ (error: unknown) => E\n  ): ((...a: A) => Either<E, B>) =>\n  (...a) =>\n  \
+    \  tryCatch(() => f(...a), onThrow)\n\n/**\n * Use `liftNullable`.\n *\n * @category\
+    \ legacy\n * @since 2.9.0\n */\nexport const fromNullableK = <E>(\n  e: E\n):\
+    \ (<A extends ReadonlyArray<unknown>, B>(\n  f: (...a: A) => B | null | undefined\n\
+    ) => (...a: A) => Either<E, NonNullable<B>>) => {\n  const from = fromNullable(e)\n\
+    \  return (f) => flow(f, from)\n}\n\n/**\n * Use `flatMapNullable`.\n *\n * @category\
+    \ legacy\n * @since 2.9.0\n */\nexport const chainNullableK = <E>(\n  e: E\n):\
+    \ (<A, B>(f: (a: A) => B | null | undefined) => (ma: Either<E, A>) => Either<E,\
+    \ NonNullable<B>>) => {\n  const from = fromNullableK(e)\n  return (f) => flatMap(from(f))\n\
+    }\n\n/**\n * @category conversions\n * @since 2.10.0\n */\nexport const toUnion:\
+    \ <E, A>(fa: Either<E, A>) => E | A = /*#__PURE__*/ foldW(identity, identity)\n\
+    \n// -------------------------------------------------------------------------------------\n\
+    // utils\n// -------------------------------------------------------------------------------------\n\
+    \n/**\n * Default value for the `onError` argument of `tryCatch`\n *\n * @since\
+    \ 2.0.0\n */\nexport function toError(e: unknown): Error {\n  try {\n    return\
+    \ e instanceof Error ? e : new Error(String(e))\n  } catch (error) {\n    return\
+    \ new Error()\n  }\n}\n\n/**\n * @since 2.0.0\n */\nexport function elem<A>(E:\
+    \ Eq<A>): {\n  (a: A): <E>(ma: Either<E, A>) => boolean\n  <E>(a: A, ma: Either<E,\
+    \ A>): boolean\n}\nexport function elem<A>(E: Eq<A>): <E>(a: A, ma?: Either<E,\
+    \ A>) => boolean | ((ma: Either<E, A>) => boolean) {\n  return (a, ma?) => {\n\
+    \    if (ma === undefined) {\n      const elemE = elem(E)\n      return (ma) =>\
+    \ elemE(a, ma)\n    }\n    return isLeft(ma) ? false : E.equals(a, ma.right)\n\
+    \  }\n}\n\n/**\n * Returns `false` if `Left` or returns the result of the application\
+    \ of the given predicate to the `Right` value.\n *\n * @example\n * import { exists,\
+    \ left, right } from 'fp-ts/Either'\n *\n * const gt2 = exists((n: number) =>\
+    \ n > 2)\n *\n * assert.strictEqual(gt2(left('a')), false)\n * assert.strictEqual(gt2(right(1)),\
+    \ false)\n * assert.strictEqual(gt2(right(3)), true)\n *\n * @since 2.0.0\n */\n\
+    export const exists =\n  <A>(predicate: Predicate<A>) =>\n  (ma: Either<unknown,\
+    \ A>): boolean =>\n    isLeft(ma) ? false : predicate(ma.right)\n\n// -------------------------------------------------------------------------------------\n\
+    // do notation\n// -------------------------------------------------------------------------------------\n\
+    \n/**\n * @category do notation\n * @since 2.9.0\n */\nexport const Do: Either<never,\
+    \ {}> = /*#__PURE__*/ of(_.emptyRecord)\n\n/**\n * @category do notation\n * @since\
+    \ 2.8.0\n */\nexport const bindTo = /*#__PURE__*/ bindTo_(Functor)\n\nconst let_\
+    \ = /*#__PURE__*/ let__(Functor)\n\nexport {\n  /**\n   * @category do notation\n\
+    \   * @since 2.13.0\n   */\n  let_ as let\n}\n\n/**\n * @category do notation\n\
+    \ * @since 2.8.0\n */\nexport const bind = /*#__PURE__*/ chainable.bind(Chain)\n\
+    \n/**\n * The `W` suffix (short for **W**idening) means that the error types will\
+    \ be merged.\n *\n * @category do notation\n * @since 2.8.0\n */\nexport const\
+    \ bindW: <N extends string, A, E2, B>(\n  name: Exclude<N, keyof A>,\n  f: (a:\
+    \ A) => Either<E2, B>\n) => <E1>(fa: Either<E1, A>) => Either<E1 | E2, { readonly\
+    \ [K in keyof A | N]: K extends keyof A ? A[K] : B }> =\n  bind as any\n\n/**\n\
+    \ * @category do notation\n * @since 2.8.0\n */\nexport const apS = /*#__PURE__*/\
+    \ apS_(Apply)\n\n/**\n * Less strict version of [`apS`](#aps).\n *\n * The `W`\
+    \ suffix (short for **W**idening) means that the error types will be merged.\n\
+    \ *\n * @category do notation\n * @since 2.8.0\n */\nexport const apSW: <A, N\
+    \ extends string, E2, B>(\n  name: Exclude<N, keyof A>,\n  fb: Either<E2, B>\n\
+    ) => <E1>(fa: Either<E1, A>) => Either<E1 | E2, { readonly [K in keyof A | N]:\
+    \ K extends keyof A ? A[K] : B }> =\n  apS as any\n\n/**\n * @since 2.11.0\n */\n\
+    export const ApT: Either<never, readonly []> = /*#__PURE__*/ of(_.emptyReadonlyArray)\n\
+    \n// -------------------------------------------------------------------------------------\n\
+    // array utils\n// -------------------------------------------------------------------------------------\n\
+    \n/**\n * Equivalent to `ReadonlyNonEmptyArray#traverseWithIndex(Applicative)`.\n\
+    \ *\n * @category traversing\n * @since 2.11.0\n */\nexport const traverseReadonlyNonEmptyArrayWithIndex\
+    \ =\n  <A, E, B>(f: (index: number, a: A) => Either<E, B>) =>\n  (as: ReadonlyNonEmptyArray<A>):\
+    \ Either<E, ReadonlyNonEmptyArray<B>> => {\n    const e = f(0, _.head(as))\n \
+    \   if (isLeft(e)) {\n      return e\n    }\n    const out: NonEmptyArray<B> =\
+    \ [e.right]\n    for (let i = 1; i < as.length; i++) {\n      const e = f(i, as[i])\n\
+    \      if (isLeft(e)) {\n        return e\n      }\n      out.push(e.right)\n\
+    \    }\n    return right(out)\n  }\n\n/**\n * Equivalent to `ReadonlyArray#traverseWithIndex(Applicative)`.\n\
+    \ *\n * @category traversing\n * @since 2.11.0\n */\nexport const traverseReadonlyArrayWithIndex\
+    \ = <A, E, B>(\n  f: (index: number, a: A) => Either<E, B>\n): ((as: ReadonlyArray<A>)\
+    \ => Either<E, ReadonlyArray<B>>) => {\n  const g = traverseReadonlyNonEmptyArrayWithIndex(f)\n\
+    \  return (as) => (_.isNonEmpty(as) ? g(as) : ApT)\n}\n\n/**\n * Equivalent to\
+    \ `ReadonlyArray#traverseWithIndex(Applicative)`.\n *\n * @category traversing\n\
+    \ * @since 2.9.0\n */\nexport const traverseArrayWithIndex: <E, A, B>(\n  f: (index:\
+    \ number, a: A) => Either<E, B>\n) => (as: ReadonlyArray<A>) => Either<E, ReadonlyArray<B>>\
+    \ = traverseReadonlyArrayWithIndex\n\n/**\n * Equivalent to `ReadonlyArray#traverse(Applicative)`.\n\
+    \ *\n * @category traversing\n * @since 2.9.0\n */\nexport const traverseArray\
+    \ = <E, A, B>(\n  f: (a: A) => Either<E, B>\n): ((as: ReadonlyArray<A>) => Either<E,\
+    \ ReadonlyArray<B>>) => traverseReadonlyArrayWithIndex((_, a) => f(a))\n\n/**\n\
+    \ * Equivalent to `ReadonlyArray#sequence(Applicative)`.\n *\n * @category traversing\n\
+    \ * @since 2.9.0\n */\nexport const sequenceArray: <E, A>(as: ReadonlyArray<Either<E,\
+    \ A>>) => Either<E, ReadonlyArray<A>> =\n  /*#__PURE__*/ traverseArray(identity)\n\
+    \n// -------------------------------------------------------------------------------------\n\
+    // legacy\n// -------------------------------------------------------------------------------------\n\
+    \n/**\n * Alias of `flatMap`.\n *\n * @category legacy\n * @since 2.6.0\n */\n\
+    export const chainW: <E2, A, B>(f: (a: A) => Either<E2, B>) => <E1>(ma: Either<E1,\
+    \ A>) => Either<E2 | E1, B> = flatMap\n\n/**\n * Alias of `flatMap`.\n *\n * @category\
+    \ legacy\n * @since 2.0.0\n */\nexport const chain: <E, A, B>(f: (a: A) => Either<E,\
+    \ B>) => (ma: Either<E, A>) => Either<E, B> = flatMap\n\n/**\n * Alias of `tap`.\n\
+    \ *\n * @category legacy\n * @since 2.0.0\n */\nexport const chainFirst: <E, A,\
+    \ B>(f: (a: A) => Either<E, B>) => (ma: Either<E, A>) => Either<E, A> = tap\n\n\
+    /**\n * Alias of `tap`.\n *\n * @category legacy\n * @since 2.8.0\n */\nexport\
+    \ const chainFirstW: <E2, A, B>(f: (a: A) => Either<E2, B>) => <E1>(ma: Either<E1,\
+    \ A>) => Either<E1 | E2, A> = tap\n\n// -------------------------------------------------------------------------------------\n\
+    // deprecated\n// -------------------------------------------------------------------------------------\n\
+    \n/**\n * Use [`Json`](./Json.ts.html) module instead.\n *\n * @category zone\
+    \ of death\n * @since 2.6.7\n * @deprecated\n */\nexport type Json = boolean |\
+    \ number | string | null | JsonArray | JsonRecord\n\n/**\n * Use [`Json`](./Json.ts.html)\
+    \ module instead.\n *\n * @category zone of death\n * @since 2.6.7\n * @deprecated\n\
+    \ */\nexport interface JsonRecord {\n  readonly [key: string]: Json\n}\n\n/**\n\
+    \ * Use [`Json`](./Json.ts.html) module instead.\n *\n * @category zone of death\n\
+    \ * @since 2.6.7\n * @deprecated\n */\nexport interface JsonArray extends ReadonlyArray<Json>\
+    \ {}\n\n/**\n * Use [`parse`](./Json.ts.html#parse) instead.\n *\n * @category\
+    \ zone of death\n * @since 2.0.0\n * @deprecated\n */\nexport function parseJSON<E>(s:\
+    \ string, onError: (reason: unknown) => E): Either<E, Json> {\n  return tryCatch(()\
+    \ => JSON.parse(s), onError)\n}\n\n/**\n * Use [`stringify`](./Json.ts.html#stringify)\
+    \ instead.\n *\n * @category zone of death\n * @since 2.0.0\n * @deprecated\n\
+    \ */\nexport const stringifyJSON = <E>(u: unknown, onError: (reason: unknown)\
+    \ => E): Either<E, string> =>\n  tryCatch(() => {\n    const s = JSON.stringify(u)\n\
+    \    if (typeof s !== 'string') {\n      throw new Error('Converting unsupported\
+    \ structure to JSON')\n    }\n    return s\n  }, onError)\n\n/**\n * This instance\
+    \ is deprecated, use small, specific instances instead.\n * For example if a function\
+    \ needs a `Functor` instance, pass `E.Functor` instead of `E.either`\n * (where\
+    \ `E` is from `import E from 'fp-ts/Either'`)\n *\n * @category zone of death\n\
+    \ * @since 2.0.0\n * @deprecated\n */\nexport const either: Monad2<URI> &\n  Foldable2<URI>\
+    \ &\n  Traversable2<URI> &\n  Bifunctor2<URI> &\n  Alt2<URI> &\n  Extend2<URI>\
+    \ &\n  ChainRec2<URI> &\n  MonadThrow2<URI> = {\n  URI,\n  map: _map,\n  of,\n\
+    \  ap: _ap,\n  chain: flatMap,\n  reduce: _reduce,\n  foldMap: _foldMap,\n  reduceRight:\
+    \ _reduceRight,\n  traverse: _traverse,\n  sequence,\n  bimap: _bimap,\n  mapLeft:\
+    \ _mapLeft,\n  alt: _alt,\n  extend: _extend,\n  chainRec: _chainRec,\n  throwError:\
+    \ throwError\n}\n\n/**\n * Use [`getApplySemigroup`](./Apply.ts.html#getapplysemigroup)\
+    \ instead.\n *\n * Semigroup returning the left-most `Left` value. If both operands\
+    \ are `Right`s then the inner values\n * are concatenated using the provided `Semigroup`\n\
+    \ *\n * @category zone of death\n * @since 2.0.0\n * @deprecated\n */\nexport\
+    \ const getApplySemigroup: <E, A>(S: Semigroup<A>) => Semigroup<Either<E, A>>\
+    \ =\n  /*#__PURE__*/ getApplySemigroup_(Apply)\n\n/**\n * Use [`getApplicativeMonoid`](./Applicative.ts.html#getapplicativemonoid)\
+    \ instead.\n *\n * @category zone of death\n * @since 2.0.0\n * @deprecated\n\
+    \ */\nexport const getApplyMonoid: <E, A>(M: Monoid<A>) => Monoid<Either<E, A>>\
+    \ =\n  /*#__PURE__*/ getApplicativeMonoid(Applicative)\n\n/**\n * Use [`getApplySemigroup`](./Apply.ts.html#getapplysemigroup)\
+    \ instead.\n *\n * @category zone of death\n * @since 2.0.0\n * @deprecated\n\
+    \ */\nexport const getValidationSemigroup = <E, A>(SE: Semigroup<E>, SA: Semigroup<A>):\
+    \ Semigroup<Either<E, A>> =>\n  getApplySemigroup_(getApplicativeValidation(SE))(SA)\n\
+    \n/**\n * Use [`getApplicativeMonoid`](./Applicative.ts.html#getapplicativemonoid)\
+    \ instead.\n *\n * @category zone of death\n * @since 2.0.0\n * @deprecated\n\
+    \ */\nexport const getValidationMonoid = <E, A>(SE: Semigroup<E>, MA: Monoid<A>):\
+    \ Monoid<Either<E, A>> =>\n  getApplicativeMonoid(getApplicativeValidation(SE))(MA)\n\
+    \n/**\n * Use [`getApplicativeValidation`](#getapplicativevalidation) and [`getAltValidation`](#getaltvalidation)\
+    \ instead.\n *\n * @category zone of death\n * @since 2.0.0\n * @deprecated\n\
+    \ */\nexport function getValidation<E>(\n  SE: Semigroup<E>\n): Monad2C<URI, E>\
+    \ &\n  Foldable2<URI> &\n  Traversable2<URI> &\n  Bifunctor2<URI> &\n  Alt2C<URI,\
+    \ E> &\n  Extend2<URI> &\n  ChainRec2C<URI, E> &\n  MonadThrow2C<URI, E> {\n \
+    \ const ap = getApplicativeValidation(SE).ap\n  const alt = getAltValidation(SE).alt\n\
+    \  return {\n    URI,\n    _E: undefined as any,\n    map: _map,\n    of,\n  \
+    \  chain: flatMap,\n    bimap: _bimap,\n    mapLeft: _mapLeft,\n    reduce: _reduce,\n\
+    \    foldMap: _foldMap,\n    reduceRight: _reduceRight,\n    extend: _extend,\n\
+    \    traverse: _traverse,\n    sequence,\n    chainRec: _chainRec,\n    throwError,\n\
+    \    ap,\n    alt\n  }\n}\n\n\n### Dependency File: function.ts\n/**\n * @since\
+    \ 2.0.0\n */\nimport { BooleanAlgebra } from './BooleanAlgebra'\nimport { Monoid\
+    \ } from './Monoid'\nimport { Ring } from './Ring'\nimport { Semigroup } from\
+    \ './Semigroup'\nimport { Semiring } from './Semiring'\n\n// -------------------------------------------------------------------------------------\n\
+    // instances\n// -------------------------------------------------------------------------------------\n\
+    \n/**\n * @category instances\n * @since 2.10.0\n */\nexport const getBooleanAlgebra\
+    \ =\n  <B>(B: BooleanAlgebra<B>) =>\n  <A = never>(): BooleanAlgebra<(a: A) =>\
+    \ B> => ({\n    meet: (x, y) => (a) => B.meet(x(a), y(a)),\n    join: (x, y) =>\
+    \ (a) => B.join(x(a), y(a)),\n    zero: () => B.zero,\n    one: () => B.one,\n\
+    \    implies: (x, y) => (a) => B.implies(x(a), y(a)),\n    not: (x) => (a) =>\
+    \ B.not(x(a))\n  })\n\n/**\n * Unary functions form a semigroup as long as you\
+    \ can provide a semigroup for the codomain.\n *\n * @example\n * import { Predicate,\
+    \ getSemigroup } from 'fp-ts/function'\n * import * as B from 'fp-ts/boolean'\n\
+    \ *\n * const f: Predicate<number> = (n) => n <= 2\n * const g: Predicate<number>\
+    \ = (n) => n >= 0\n *\n * const S1 = getSemigroup(B.SemigroupAll)<number>()\n\
+    \ *\n * assert.deepStrictEqual(S1.concat(f, g)(1), true)\n * assert.deepStrictEqual(S1.concat(f,\
+    \ g)(3), false)\n *\n * const S2 = getSemigroup(B.SemigroupAny)<number>()\n *\n\
+    \ * assert.deepStrictEqual(S2.concat(f, g)(1), true)\n * assert.deepStrictEqual(S2.concat(f,\
+    \ g)(3), true)\n *\n * @category instances\n * @since 2.10.0\n */\nexport const\
+    \ getSemigroup =\n  <S>(S: Semigroup<S>) =>\n  <A = never>(): Semigroup<(a: A)\
+    \ => S> => ({\n    concat: (f, g) => (a) => S.concat(f(a), g(a))\n  })\n\n/**\n\
+    \ * Unary functions form a monoid as long as you can provide a monoid for the\
+    \ codomain.\n *\n * @example\n * import { Predicate } from 'fp-ts/Predicate'\n\
+    \ * import { getMonoid } from 'fp-ts/function'\n * import * as B from 'fp-ts/boolean'\n\
+    \ *\n * const f: Predicate<number> = (n) => n <= 2\n * const g: Predicate<number>\
+    \ = (n) => n >= 0\n *\n * const M1 = getMonoid(B.MonoidAll)<number>()\n *\n *\
+    \ assert.deepStrictEqual(M1.concat(f, g)(1), true)\n * assert.deepStrictEqual(M1.concat(f,\
+    \ g)(3), false)\n *\n * const M2 = getMonoid(B.MonoidAny)<number>()\n *\n * assert.deepStrictEqual(M2.concat(f,\
+    \ g)(1), true)\n * assert.deepStrictEqual(M2.concat(f, g)(3), true)\n *\n * @category\
+    \ instances\n * @since 2.10.0\n */\nexport const getMonoid = <M>(M: Monoid<M>):\
+    \ (<A = never>() => Monoid<(a: A) => M>) => {\n  const getSemigroupM = getSemigroup(M)\n\
+    \  return <A>() => ({\n    concat: getSemigroupM<A>().concat,\n    empty: () =>\
+    \ M.empty\n  })\n}\n\n/**\n * @category instances\n * @since 2.10.0\n */\nexport\
+    \ const getSemiring = <A, B>(S: Semiring<B>): Semiring<(a: A) => B> => ({\n  add:\
+    \ (f, g) => (x) => S.add(f(x), g(x)),\n  zero: () => S.zero,\n  mul: (f, g) =>\
+    \ (x) => S.mul(f(x), g(x)),\n  one: () => S.one\n})\n\n/**\n * @category instances\n\
+    \ * @since 2.10.0\n */\nexport const getRing = <A, B>(R: Ring<B>): Ring<(a: A)\
+    \ => B> => {\n  const S = getSemiring<A, B>(R)\n  return {\n    add: S.add,\n\
+    \    mul: S.mul,\n    one: S.one,\n    zero: S.zero,\n    sub: (f, g) => (x) =>\
+    \ R.sub(f(x), g(x))\n  }\n}\n\n// -------------------------------------------------------------------------------------\n\
+    // utils\n// -------------------------------------------------------------------------------------\n\
+    \n/**\n * @since 2.11.0\n */\nexport const apply =\n  <A>(a: A) =>\n  <B>(f: (a:\
+    \ A) => B): B =>\n    f(a)\n\n/**\n * @example\n * import { FunctionN } from 'fp-ts/function'\n\
+    \ *\n * export const sum: FunctionN<[number, number], number> = (a, b) => a +\
+    \ b\n *\n * @since 2.0.0\n */\nexport interface FunctionN<A extends ReadonlyArray<unknown>,\
+    \ B> {\n  (...args: A): B\n}\n\n/**\n * @since 2.0.0\n */\nexport function identity<A>(a:\
+    \ A): A {\n  return a\n}\n\n/**\n * @since 2.0.0\n */\nexport const unsafeCoerce:\
+    \ <A, B>(a: A) => B = identity as any\n\n/**\n * @since 2.0.0\n */\nexport function\
+    \ constant<A>(a: A): LazyArg<A> {\n  return () => a\n}\n\n/**\n * A thunk that\
+    \ returns always `true`.\n *\n * @since 2.0.0\n */\nexport const constTrue: LazyArg<boolean>\
+    \ = /*#__PURE__*/ constant(true)\n\n/**\n * A thunk that returns always `false`.\n\
+    \ *\n * @since 2.0.0\n */\nexport const constFalse: LazyArg<boolean> = /*#__PURE__*/\
+    \ constant(false)\n\n/**\n * A thunk that returns always `null`.\n *\n * @since\
+    \ 2.0.0\n */\nexport const constNull: LazyArg<null> = /*#__PURE__*/ constant(null)\n\
+    \n/**\n * A thunk that returns always `undefined`.\n *\n * @since 2.0.0\n */\n\
+    export const constUndefined: LazyArg<undefined> = /*#__PURE__*/ constant(undefined)\n\
+    \n/**\n * A thunk that returns always `void`.\n *\n * @since 2.0.0\n */\nexport\
+    \ const constVoid: LazyArg<void> = constUndefined\n\n/**\n * Flips the arguments\
+    \ of a curried function.\n *\n * @example\n * import { flip } from 'fp-ts/function'\n\
+    \ *\n * const f = (a: number) => (b: string) => a - b.length\n *\n * assert.strictEqual(flip(f)('aaa')(2),\
+    \ -1)\n *\n * @since 2.0.0\n */\nexport function flip<A, B, C>(f: (a: A) => (b:\
+    \ B) => C): (b: B) => (a: A) => C\n/** @deprecated */\nexport function flip<A,\
+    \ B, C>(f: (a: A, b: B) => C): (b: B, a: A) => C\nexport function flip(f: Function):\
+    \ Function {\n  return (...args: Array<any>) => {\n    if (args.length > 1) {\n\
+    \      return f(args[1], args[0])\n    }\n\n    return (a: any) => f(a)(args[0])\n\
+    \  }\n}\n\n/**\n * Performs left-to-right function composition. The first argument\
+    \ may have any arity, the remaining arguments must be unary.\n *\n * See also\
+    \ [`pipe`](#pipe).\n *\n * @example\n * import { flow } from 'fp-ts/function'\n\
+    \ *\n * const len = (s: string): number => s.length\n * const double = (n: number):\
+    \ number => n * 2\n *\n * const f = flow(len, double)\n *\n * assert.strictEqual(f('aaa'),\
+    \ 6)\n *\n * @since 2.0.0\n */\nexport function flow<A extends ReadonlyArray<unknown>,\
+    \ B>(ab: (...a: A) => B): (...a: A) => B\nexport function flow<A extends ReadonlyArray<unknown>,\
+    \ B, C>(ab: (...a: A) => B, bc: (b: B) => C): (...a: A) => C\nexport function\
+    \ flow<A extends ReadonlyArray<unknown>, B, C, D>(\n  ab: (...a: A) => B,\n  bc:\
+    \ (b: B) => C,\n  cd: (c: C) => D\n): (...a: A) => D\nexport function flow<A extends\
+    \ ReadonlyArray<unknown>, B, C, D, E>(\n  ab: (...a: A) => B,\n  bc: (b: B) =>\
+    \ C,\n  cd: (c: C) => D,\n  de: (d: D) => E\n): (...a: A) => E\nexport function\
+    \ flow<A extends ReadonlyArray<unknown>, B, C, D, E, F>(\n  ab: (...a: A) => B,\n\
+    \  bc: (b: B) => C,\n  cd: (c: C) => D,\n  de: (d: D) => E,\n  ef: (e: E) => F\n\
+    ): (...a: A) => F\nexport function flow<A extends ReadonlyArray<unknown>, B, C,\
+    \ D, E, F, G>(\n  ab: (...a: A) => B,\n  bc: (b: B) => C,\n  cd: (c: C) => D,\n\
+    \  de: (d: D) => E,\n  ef: (e: E) => F,\n  fg: (f: F) => G\n): (...a: A) => G\n\
+    export function flow<A extends ReadonlyArray<unknown>, B, C, D, E, F, G, H>(\n\
+    \  ab: (...a: A) => B,\n  bc: (b: B) => C,\n  cd: (c: C) => D,\n  de: (d: D) =>\
+    \ E,\n  ef: (e: E) => F,\n  fg: (f: F) => G,\n  gh: (g: G) => H\n): (...a: A)\
+    \ => H\nexport function flow<A extends ReadonlyArray<unknown>, B, C, D, E, F,\
+    \ G, H, I>(\n  ab: (...a: A) => B,\n  bc: (b: B) => C,\n  cd: (c: C) => D,\n \
+    \ de: (d: D) => E,\n  ef: (e: E) => F,\n  fg: (f: F) => G,\n  gh: (g: G) => H,\n\
+    \  hi: (h: H) => I\n): (...a: A) => I\nexport function flow<A extends ReadonlyArray<unknown>,\
+    \ B, C, D, E, F, G, H, I, J>(\n  ab: (...a: A) => B,\n  bc: (b: B) => C,\n  cd:\
+    \ (c: C) => D,\n  de: (d: D) => E,\n  ef: (e: E) => F,\n  fg: (f: F) => G,\n \
+    \ gh: (g: G) => H,\n  hi: (h: H) => I,\n  ij: (i: I) => J\n): (...a: A) => J\n\
+    export function flow(\n  ab: Function,\n  bc?: Function,\n  cd?: Function,\n \
+    \ de?: Function,\n  ef?: Function,\n  fg?: Function,\n  gh?: Function,\n  hi?:\
+    \ Function,\n  ij?: Function\n): unknown {\n  switch (arguments.length) {\n  \
+    \  case 1:\n      return ab\n    case 2:\n      return function (this: unknown)\
+    \ {\n        return bc!(ab.apply(this, arguments))\n      }\n    case 3:\n   \
+    \   return function (this: unknown) {\n        return cd!(bc!(ab.apply(this, arguments)))\n\
+    \      }\n    case 4:\n      return function (this: unknown) {\n        return\
+    \ de!(cd!(bc!(ab.apply(this, arguments))))\n      }\n    case 5:\n      return\
+    \ function (this: unknown) {\n        return ef!(de!(cd!(bc!(ab.apply(this, arguments)))))\n\
+    \      }\n    case 6:\n      return function (this: unknown) {\n        return\
+    \ fg!(ef!(de!(cd!(bc!(ab.apply(this, arguments))))))\n      }\n    case 7:\n \
+    \     return function (this: unknown) {\n        return gh!(fg!(ef!(de!(cd!(bc!(ab.apply(this,\
+    \ arguments)))))))\n      }\n    case 8:\n      return function (this: unknown)\
+    \ {\n        return hi!(gh!(fg!(ef!(de!(cd!(bc!(ab.apply(this, arguments))))))))\n\
+    \      }\n    case 9:\n      return function (this: unknown) {\n        return\
+    \ ij!(hi!(gh!(fg!(ef!(de!(cd!(bc!(ab.apply(this, arguments)))))))))\n      }\n\
+    \  }\n  return\n}\n\n/**\n * @since 2.0.0\n */\nexport function tuple<T extends\
+    \ ReadonlyArray<any>>(...t: T): T {\n  return t\n}\n\n/**\n * @since 2.0.0\n */\n\
+    export function increment(n: number): number {\n  return n + 1\n}\n\n/**\n * @since\
+    \ 2.0.0\n */\nexport function decrement(n: number): number {\n  return n - 1\n\
+    }\n\n/**\n * @since 2.0.0\n */\nexport function absurd<A>(_: never): A {\n  throw\
+    \ new Error('Called `absurd` function which should be uncallable')\n}\n\n/**\n\
+    \ * Creates a tupled version of this function: instead of `n` arguments, it accepts\
+    \ a single tuple argument.\n *\n * @example\n * import { tupled } from 'fp-ts/function'\n\
+    \ *\n * const add = tupled((x: number, y: number): number => x + y)\n *\n * assert.strictEqual(add([1,\
+    \ 2]), 3)\n *\n * @since 2.4.0\n */\nexport function tupled<A extends ReadonlyArray<unknown>,\
+    \ B>(f: (...a: A) => B): (a: A) => B {\n  return (a) => f(...a)\n}\n\n/**\n *\
+    \ Inverse function of `tupled`\n *\n * @since 2.4.0\n */\nexport function untupled<A\
+    \ extends ReadonlyArray<unknown>, B>(f: (a: A) => B): (...a: A) => B {\n  return\
+    \ (...a) => f(a)\n}\n\n/**\n * Pipes the value of an expression into a pipeline\
+    \ of functions.\n *\n * See also [`flow`](#flow).\n *\n * @example\n * import\
+    \ { pipe } from 'fp-ts/function'\n *\n * const len = (s: string): number => s.length\n\
+    \ * const double = (n: number): number => n * 2\n *\n * // without pipe\n * assert.strictEqual(double(len('aaa')),\
+    \ 6)\n *\n * // with pipe\n * assert.strictEqual(pipe('aaa', len, double), 6)\n\
+    \ *\n * @since 2.6.3\n */\nexport function pipe<A>(a: A): A\nexport function pipe<A,\
+    \ B>(a: A, ab: (a: A) => B): B\nexport function pipe<A, B, C>(a: A, ab: (a: A)\
+    \ => B, bc: (b: B) => C): C\nexport function pipe<A, B, C, D>(a: A, ab: (a: A)\
+    \ => B, bc: (b: B) => C, cd: (c: C) => D): D\nexport function pipe<A, B, C, D,\
+    \ E>(a: A, ab: (a: A) => B, bc: (b: B) => C, cd: (c: C) => D, de: (d: D) => E):\
+    \ E\nexport function pipe<A, B, C, D, E, F>(\n  a: A,\n  ab: (a: A) => B,\n  bc:\
+    \ (b: B) => C,\n  cd: (c: C) => D,\n  de: (d: D) => E,\n  ef: (e: E) => F\n):\
+    \ F\nexport function pipe<A, B, C, D, E, F, G>(\n  a: A,\n  ab: (a: A) => B,\n\
+    \  bc: (b: B) => C,\n  cd: (c: C) => D,\n  de: (d: D) => E,\n  ef: (e: E) => F,\n\
+    \  fg: (f: F) => G\n): G\nexport function pipe<A, B, C, D, E, F, G, H>(\n  a:\
+    \ A,\n  ab: (a: A) => B,\n  bc: (b: B) => C,\n  cd: (c: C) => D,\n  de: (d: D)\
+    \ => E,\n  ef: (e: E) => F,\n  fg: (f: F) => G,\n  gh: (g: G) => H\n): H\nexport\
+    \ function pipe<A, B, C, D, E, F, G, H, I>(\n  a: A,\n  ab: (a: A) => B,\n  bc:\
+    \ (b: B) => C,\n  cd: (c: C) => D,\n  de: (d: D) => E,\n  ef: (e: E) => F,\n \
+    \ fg: (f: F) => G,\n  gh: (g: G) => H,\n  hi: (h: H) => I\n): I\nexport function\
+    \ pipe<A, B, C, D, E, F, G, H, I, J>(\n  a: A,\n  ab: (a: A) => B,\n  bc: (b:\
+    \ B) => C,\n  cd: (c: C) => D,\n  de: (d: D) => E,\n  ef: (e: E) => F,\n  fg:\
+    \ (f: F) => G,\n  gh: (g: G) => H,\n  hi: (h: H) => I,\n  ij: (i: I) => J\n):\
+    \ J\nexport function pipe<A, B, C, D, E, F, G, H, I, J, K>(\n  a: A,\n  ab: (a:\
+    \ A) => B,\n  bc: (b: B) => C,\n  cd: (c: C) => D,\n  de: (d: D) => E,\n  ef:\
+    \ (e: E) => F,\n  fg: (f: F) => G,\n  gh: (g: G) => H,\n  hi: (h: H) => I,\n \
+    \ ij: (i: I) => J,\n  jk: (j: J) => K\n): K\nexport function pipe<A, B, C, D,\
+    \ E, F, G, H, I, J, K, L>(\n  a: A,\n  ab: (a: A) => B,\n  bc: (b: B) => C,\n\
+    \  cd: (c: C) => D,\n  de: (d: D) => E,\n  ef: (e: E) => F,\n  fg: (f: F) => G,\n\
+    \  gh: (g: G) => H,\n  hi: (h: H) => I,\n  ij: (i: I) => J,\n  jk: (j: J) => K,\n\
+    \  kl: (k: K) => L\n): L\nexport function pipe<A, B, C, D, E, F, G, H, I, J, K,\
+    \ L, M>(\n  a: A,\n  ab: (a: A) => B,\n  bc: (b: B) => C,\n  cd: (c: C) => D,\n\
+    \  de: (d: D) => E,\n  ef: (e: E) => F,\n  fg: (f: F) => G,\n  gh: (g: G) => H,\n\
+    \  hi: (h: H) => I,\n  ij: (i: I) => J,\n  jk: (j: J) => K,\n  kl: (k: K) => L,\n\
+    \  lm: (l: L) => M\n): M\nexport function pipe<A, B, C, D, E, F, G, H, I, J, K,\
+    \ L, M, N>(\n  a: A,\n  ab: (a: A) => B,\n  bc: (b: B) => C,\n  cd: (c: C) =>\
+    \ D,\n  de: (d: D) => E,\n  ef: (e: E) => F,\n  fg: (f: F) => G,\n  gh: (g: G)\
+    \ => H,\n  hi: (h: H) => I,\n  ij: (i: I) => J,\n  jk: (j: J) => K,\n  kl: (k:\
+    \ K) => L,\n  lm: (l: L) => M,\n  mn: (m: M) => N\n): N\nexport function pipe<A,\
+    \ B, C, D, E, F, G, H, I, J, K, L, M, N, O>(\n  a: A,\n  ab: (a: A) => B,\n  bc:\
+    \ (b: B) => C,\n  cd: (c: C) => D,\n  de: (d: D) => E,\n  ef: (e: E) => F,\n \
+    \ fg: (f: F) => G,\n  gh: (g: G) => H,\n  hi: (h: H) => I,\n  ij: (i: I) => J,\n\
+    \  jk: (j: J) => K,\n  kl: (k: K) => L,\n  lm: (l: L) => M,\n  mn: (m: M) => N,\n\
+    \  no: (n: N) => O\n): O\n\nexport function pipe<A, B, C, D, E, F, G, H, I, J,\
+    \ K, L, M, N, O, P>(\n  a: A,\n  ab: (a: A) => B,\n  bc: (b: B) => C,\n  cd: (c:\
+    \ C) => D,\n  de: (d: D) => E,\n  ef: (e: E) => F,\n  fg: (f: F) => G,\n  gh:\
+    \ (g: G) => H,\n  hi: (h: H) => I,\n  ij: (i: I) => J,\n  jk: (j: J) => K,\n \
+    \ kl: (k: K) => L,\n  lm: (l: L) => M,\n  mn: (m: M) => N,\n  no: (n: N) => O,\n\
+    \  op: (o: O) => P\n): P\n\nexport function pipe<A, B, C, D, E, F, G, H, I, J,\
+    \ K, L, M, N, O, P, Q>(\n  a: A,\n  ab: (a: A) => B,\n  bc: (b: B) => C,\n  cd:\
+    \ (c: C) => D,\n  de: (d: D) => E,\n  ef: (e: E) => F,\n  fg: (f: F) => G,\n \
+    \ gh: (g: G) => H,\n  hi: (h: H) => I,\n  ij: (i: I) => J,\n  jk: (j: J) => K,\n\
+    \  kl: (k: K) => L,\n  lm: (l: L) => M,\n  mn: (m: M) => N,\n  no: (n: N) => O,\n\
+    \  op: (o: O) => P,\n  pq: (p: P) => Q\n): Q\n\nexport function pipe<A, B, C,\
+    \ D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R>(\n  a: A,\n  ab: (a: A) => B,\n\
+    \  bc: (b: B) => C,\n  cd: (c: C) => D,\n  de: (d: D) => E,\n  ef: (e: E) => F,\n\
+    \  fg: (f: F) => G,\n  gh: (g: G) => H,\n  hi: (h: H) => I,\n  ij: (i: I) => J,\n\
+    \  jk: (j: J) => K,\n  kl: (k: K) => L,\n  lm: (l: L) => M,\n  mn: (m: M) => N,\n\
+    \  no: (n: N) => O,\n  op: (o: O) => P,\n  pq: (p: P) => Q,\n  qr: (q: Q) => R\n\
+    ): R\n\nexport function pipe<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q,\
+    \ R, S>(\n  a: A,\n  ab: (a: A) => B,\n  bc: (b: B) => C,\n  cd: (c: C) => D,\n\
+    \  de: (d: D) => E,\n  ef: (e: E) => F,\n  fg: (f: F) => G,\n  gh: (g: G) => H,\n\
+    \  hi: (h: H) => I,\n  ij: (i: I) => J,\n  jk: (j: J) => K,\n  kl: (k: K) => L,\n\
+    \  lm: (l: L) => M,\n  mn: (m: M) => N,\n  no: (n: N) => O,\n  op: (o: O) => P,\n\
+    \  pq: (p: P) => Q,\n  qr: (q: Q) => R,\n  rs: (r: R) => S\n): S\n\nexport function\
+    \ pipe<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T>(\n  a: A,\n\
+    \  ab: (a: A) => B,\n  bc: (b: B) => C,\n  cd: (c: C) => D,\n  de: (d: D) => E,\n\
+    \  ef: (e: E) => F,\n  fg: (f: F) => G,\n  gh: (g: G) => H,\n  hi: (h: H) => I,\n\
+    \  ij: (i: I) => J,\n  jk: (j: J) => K,\n  kl: (k: K) => L,\n  lm: (l: L) => M,\n\
+    \  mn: (m: M) => N,\n  no: (n: N) => O,\n  op: (o: O) => P,\n  pq: (p: P) => Q,\n\
+    \  qr: (q: Q) => R,\n  rs: (r: R) => S,\n  st: (s: S) => T\n): T\nexport function\
+    \ pipe(\n  a: unknown,\n  ab?: Function,\n  bc?: Function,\n  cd?: Function,\n\
+    \  de?: Function,\n  ef?: Function,\n  fg?: Function,\n  gh?: Function,\n  hi?:\
+    \ Function\n): unknown {\n  switch (arguments.length) {\n    case 1:\n      return\
+    \ a\n    case 2:\n      return ab!(a)\n    case 3:\n      return bc!(ab!(a))\n\
+    \    case 4:\n      return cd!(bc!(ab!(a)))\n    case 5:\n      return de!(cd!(bc!(ab!(a))))\n\
+    \    case 6:\n      return ef!(de!(cd!(bc!(ab!(a)))))\n    case 7:\n      return\
+    \ fg!(ef!(de!(cd!(bc!(ab!(a))))))\n    case 8:\n      return gh!(fg!(ef!(de!(cd!(bc!(ab!(a)))))))\n\
+    \    case 9:\n      return hi!(gh!(fg!(ef!(de!(cd!(bc!(ab!(a))))))))\n    default:\
+    \ {\n      let ret = arguments[0]\n      for (let i = 1; i < arguments.length;\
+    \ i++) {\n        ret = arguments[i](ret)\n      }\n      return ret\n    }\n\
+    \  }\n}\n\n/**\n * Type hole simulation\n *\n * @since 2.7.0\n */\nexport const\
+    \ hole: <T>() => T = absurd as any\n\n/**\n * @since 2.11.0\n */\nexport const\
+    \ SK = <A, B>(_: A, b: B): B => b\n\n// -------------------------------------------------------------------------------------\n\
+    // deprecated\n// -------------------------------------------------------------------------------------\n\
+    \n/**\n * Use `Refinement` module instead.\n *\n * @category zone of death\n *\
+    \ @since 2.0.0\n * @deprecated\n */\nexport interface Refinement<A, B extends\
+    \ A> {\n  (a: A): a is B\n}\n\n/**\n * Use `Predicate` module instead.\n *\n *\
+    \ @category zone of death\n * @since 2.0.0\n * @deprecated\n */\nexport interface\
+    \ Predicate<A> {\n  (a: A): boolean\n}\n\n/**\n * Use `Predicate` module instead.\n\
+    \ *\n * @category zone of death\n * @since 2.0.0\n * @deprecated\n */\nexport\
+    \ function not<A>(predicate: Predicate<A>): Predicate<A> {\n  return (a) => !predicate(a)\n\
+    }\n\n/**\n * Use `Endomorphism` module instead.\n *\n * @category zone of death\n\
+    \ * @since 2.0.0\n * @deprecated\n */\nexport interface Endomorphism<A> {\n  (a:\
+    \ A): A\n}\n\n/**\n * Use `Endomorphism` module instead.\n *\n * @category zone\
+    \ of death\n * @since 2.10.0\n * @deprecated\n */\nexport const getEndomorphismMonoid\
+    \ = <A = never>(): Monoid<Endomorphism<A>> => ({\n  concat: (first, second) =>\
+    \ flow(first, second),\n  empty: identity\n})\n\n/**\n * A lazy argument.\n *\n\
+    \ * @since 2.15.0\n */\nexport interface LazyArg<A> {\n  (): A\n}\n\n/** @internal\
+    \ */\nexport const dual: {\n  <DataLast extends (...args: Array<any>) => any,\
+    \ DataFirst extends (...args: Array<any>) => any>(\n    arity: Parameters<DataFirst>['length'],\n\
+    \    body: DataFirst\n  ): DataLast & DataFirst\n  <DataLast extends (...args:\
+    \ Array<any>) => any, DataFirst extends (...args: Array<any>) => any>(\n    isDataFirst:\
+    \ (args: IArguments) => boolean,\n    body: DataFirst\n  ): DataLast & DataFirst\n\
+    } = (arity: any, body: any) => {\n  const isDataFirst: (args: IArguments) => boolean\
+    \ = typeof arity === 'number' ? (args) => args.length >= arity : arity\n  return\
+    \ function (this: any) {\n    const args = Array.from(arguments)\n    if (isDataFirst(arguments))\
+    \ {\n      return body.apply(this, args)\n    }\n    return (self: any) => body(self,\
+    \ ...args)\n  }\n}\n\n// -------------------------------------------------------------------------------------\n\
+    // lagacy\n// -------------------------------------------------------------------------------------\n\
+    \n/**\n * Use `LazyArg` instead.\n *\n * @category lagacy\n * @since 2.0.0\n */\n\
+    export interface Lazy<A> {\n  (): A\n}\n\nOutput the complete test file, code\
+    \ only, no explanations.\n### Time\nCurrent time: 2025-04-03 22:59:41\n"
+  role: user
