@@ -1,0 +1,294 @@
+messages:
+- content: You are an AI agent expert in writing unit tests. Your task is to write
+    unit tests for the given code files of the repository. Make sure the tests can
+    be executed without lint or compile errors.
+  role: system
+- content: "### Task Information\nBased on the source code, write/rewrite tests to\
+    \ cover the source code.\nRepository: fp-ts\nSource File Path: src/BooleanAlgebra.ts\n\
+    Test File Path: test/BooleanAlgebra.ts\nProject Programming Language: typescript\n\
+    Testing Framework: vitest\n### Source File Content\n### Source File Content:\n\
+    /**\n * Boolean algebras are Heyting algebras with the additional constraint that\
+    \ the law of the excluded middle is true\n * (equivalently, double-negation is\
+    \ true).\n *\n * Instances should satisfy the following laws in addition to the\
+    \ `HeytingAlgebra` laws:\n *\n * - Excluded middle: `a ∨ ¬a <-> 1`\n *\n * Boolean\
+    \ algebras generalize classical logic: one is equivalent to \"true\" and zero\
+    \ is equivalent to \"false\".\n *\n * @since 2.0.0\n */\nimport { getBooleanAlgebra\
+    \ } from './function'\nimport { HeytingAlgebra } from './HeytingAlgebra'\n\n//\
+    \ -------------------------------------------------------------------------------------\n\
+    // model\n// -------------------------------------------------------------------------------------\n\
+    \n/**\n * @category model\n * @since 2.0.0\n */\nexport interface BooleanAlgebra<A>\
+    \ extends HeytingAlgebra<A> {}\n\n// -------------------------------------------------------------------------------------\n\
+    // combinators\n// -------------------------------------------------------------------------------------\n\
+    \n/**\n * Every boolean algebras has a dual algebra, which involves reversing\
+    \ one/zero as well as join/meet.\n *\n * @since 2.10.0\n */\nexport const reverse\
+    \ = <A>(B: BooleanAlgebra<A>): BooleanAlgebra<A> => ({\n  meet: (x, y) => B.join(x,\
+    \ y),\n  join: (x, y) => B.meet(x, y),\n  zero: B.one,\n  one: B.zero,\n  implies:\
+    \ (x, y) => B.join(B.not(x), y),\n  not: B.not\n})\n\n// -------------------------------------------------------------------------------------\n\
+    // instances\n// -------------------------------------------------------------------------------------\n\
+    \n/**\n * @category instances\n * @since 2.0.0\n */\nexport const booleanAlgebraVoid:\
+    \ BooleanAlgebra<void> = {\n  meet: () => undefined,\n  join: () => undefined,\n\
+    \  zero: undefined,\n  one: undefined,\n  implies: () => undefined,\n  not: ()\
+    \ => undefined\n}\n\n// -------------------------------------------------------------------------------------\n\
+    // deprecated\n// -------------------------------------------------------------------------------------\n\
+    \n/**\n * Use [`reverse`](#reverse) instead.\n *\n * @category zone of death\n\
+    \ * @since 2.0.0\n * @deprecated\n */\nexport const getDualBooleanAlgebra = reverse\n\
+    \n/**\n * Use [`BooleanAlgebra`](./boolean.ts.html#booleanalgebra) instead.\n\
+    \ *\n * @category zone of death\n * @since 2.0.0\n * @deprecated\n */\nexport\
+    \ const booleanAlgebraBoolean: BooleanAlgebra<boolean> = {\n  meet: (x, y) =>\
+    \ x && y,\n  join: (x, y) => x || y,\n  zero: false,\n  one: true,\n  implies:\
+    \ (x, y) => !x || y,\n  not: (x) => !x\n}\n\n/**\n * Use [`getBooleanAlgebra`](./function.ts.html#getbooleanalgebra)\
+    \ instead.\n *\n * @category zone of death\n * @since 2.0.0\n * @deprecated\n\
+    \ */\nexport const getFunctionBooleanAlgebra: <B>(B: BooleanAlgebra<B>) => <A\
+    \ = never>() => BooleanAlgebra<(a: A) => B> =\n  getBooleanAlgebra\n\n### Source\
+    \ File Dependency Files Content\n### Dependency File: function.ts\n/**\n * @since\
+    \ 2.0.0\n */\nimport { BooleanAlgebra } from './BooleanAlgebra'\nimport { Monoid\
+    \ } from './Monoid'\nimport { Ring } from './Ring'\nimport { Semigroup } from\
+    \ './Semigroup'\nimport { Semiring } from './Semiring'\n\n// -------------------------------------------------------------------------------------\n\
+    // instances\n// -------------------------------------------------------------------------------------\n\
+    \n/**\n * @category instances\n * @since 2.10.0\n */\nexport const getBooleanAlgebra\
+    \ =\n  <B>(B: BooleanAlgebra<B>) =>\n  <A = never>(): BooleanAlgebra<(a: A) =>\
+    \ B> => ({\n    meet: (x, y) => (a) => B.meet(x(a), y(a)),\n    join: (x, y) =>\
+    \ (a) => B.join(x(a), y(a)),\n    zero: () => B.zero,\n    one: () => B.one,\n\
+    \    implies: (x, y) => (a) => B.implies(x(a), y(a)),\n    not: (x) => (a) =>\
+    \ B.not(x(a))\n  })\n\n/**\n * Unary functions form a semigroup as long as you\
+    \ can provide a semigroup for the codomain.\n *\n * @example\n * import { Predicate,\
+    \ getSemigroup } from 'fp-ts/function'\n * import * as B from 'fp-ts/boolean'\n\
+    \ *\n * const f: Predicate<number> = (n) => n <= 2\n * const g: Predicate<number>\
+    \ = (n) => n >= 0\n *\n * const S1 = getSemigroup(B.SemigroupAll)<number>()\n\
+    \ *\n * assert.deepStrictEqual(S1.concat(f, g)(1), true)\n * assert.deepStrictEqual(S1.concat(f,\
+    \ g)(3), false)\n *\n * const S2 = getSemigroup(B.SemigroupAny)<number>()\n *\n\
+    \ * assert.deepStrictEqual(S2.concat(f, g)(1), true)\n * assert.deepStrictEqual(S2.concat(f,\
+    \ g)(3), true)\n *\n * @category instances\n * @since 2.10.0\n */\nexport const\
+    \ getSemigroup =\n  <S>(S: Semigroup<S>) =>\n  <A = never>(): Semigroup<(a: A)\
+    \ => S> => ({\n    concat: (f, g) => (a) => S.concat(f(a), g(a))\n  })\n\n/**\n\
+    \ * Unary functions form a monoid as long as you can provide a monoid for the\
+    \ codomain.\n *\n * @example\n * import { Predicate } from 'fp-ts/Predicate'\n\
+    \ * import { getMonoid } from 'fp-ts/function'\n * import * as B from 'fp-ts/boolean'\n\
+    \ *\n * const f: Predicate<number> = (n) => n <= 2\n * const g: Predicate<number>\
+    \ = (n) => n >= 0\n *\n * const M1 = getMonoid(B.MonoidAll)<number>()\n *\n *\
+    \ assert.deepStrictEqual(M1.concat(f, g)(1), true)\n * assert.deepStrictEqual(M1.concat(f,\
+    \ g)(3), false)\n *\n * const M2 = getMonoid(B.MonoidAny)<number>()\n *\n * assert.deepStrictEqual(M2.concat(f,\
+    \ g)(1), true)\n * assert.deepStrictEqual(M2.concat(f, g)(3), true)\n *\n * @category\
+    \ instances\n * @since 2.10.0\n */\nexport const getMonoid = <M>(M: Monoid<M>):\
+    \ (<A = never>() => Monoid<(a: A) => M>) => {\n  const getSemigroupM = getSemigroup(M)\n\
+    \  return <A>() => ({\n    concat: getSemigroupM<A>().concat,\n    empty: () =>\
+    \ M.empty\n  })\n}\n\n/**\n * @category instances\n * @since 2.10.0\n */\nexport\
+    \ const getSemiring = <A, B>(S: Semiring<B>): Semiring<(a: A) => B> => ({\n  add:\
+    \ (f, g) => (x) => S.add(f(x), g(x)),\n  zero: () => S.zero,\n  mul: (f, g) =>\
+    \ (x) => S.mul(f(x), g(x)),\n  one: () => S.one\n})\n\n/**\n * @category instances\n\
+    \ * @since 2.10.0\n */\nexport const getRing = <A, B>(R: Ring<B>): Ring<(a: A)\
+    \ => B> => {\n  const S = getSemiring<A, B>(R)\n  return {\n    add: S.add,\n\
+    \    mul: S.mul,\n    one: S.one,\n    zero: S.zero,\n    sub: (f, g) => (x) =>\
+    \ R.sub(f(x), g(x))\n  }\n}\n\n// -------------------------------------------------------------------------------------\n\
+    // utils\n// -------------------------------------------------------------------------------------\n\
+    \n/**\n * @since 2.11.0\n */\nexport const apply =\n  <A>(a: A) =>\n  <B>(f: (a:\
+    \ A) => B): B =>\n    f(a)\n\n/**\n * @example\n * import { FunctionN } from 'fp-ts/function'\n\
+    \ *\n * export const sum: FunctionN<[number, number], number> = (a, b) => a +\
+    \ b\n *\n * @since 2.0.0\n */\nexport interface FunctionN<A extends ReadonlyArray<unknown>,\
+    \ B> {\n  (...args: A): B\n}\n\n/**\n * @since 2.0.0\n */\nexport function identity<A>(a:\
+    \ A): A {\n  return a\n}\n\n/**\n * @since 2.0.0\n */\nexport const unsafeCoerce:\
+    \ <A, B>(a: A) => B = identity as any\n\n/**\n * @since 2.0.0\n */\nexport function\
+    \ constant<A>(a: A): LazyArg<A> {\n  return () => a\n}\n\n/**\n * A thunk that\
+    \ returns always `true`.\n *\n * @since 2.0.0\n */\nexport const constTrue: LazyArg<boolean>\
+    \ = /*#__PURE__*/ constant(true)\n\n/**\n * A thunk that returns always `false`.\n\
+    \ *\n * @since 2.0.0\n */\nexport const constFalse: LazyArg<boolean> = /*#__PURE__*/\
+    \ constant(false)\n\n/**\n * A thunk that returns always `null`.\n *\n * @since\
+    \ 2.0.0\n */\nexport const constNull: LazyArg<null> = /*#__PURE__*/ constant(null)\n\
+    \n/**\n * A thunk that returns always `undefined`.\n *\n * @since 2.0.0\n */\n\
+    export const constUndefined: LazyArg<undefined> = /*#__PURE__*/ constant(undefined)\n\
+    \n/**\n * A thunk that returns always `void`.\n *\n * @since 2.0.0\n */\nexport\
+    \ const constVoid: LazyArg<void> = constUndefined\n\n/**\n * Flips the arguments\
+    \ of a curried function.\n *\n * @example\n * import { flip } from 'fp-ts/function'\n\
+    \ *\n * const f = (a: number) => (b: string) => a - b.length\n *\n * assert.strictEqual(flip(f)('aaa')(2),\
+    \ -1)\n *\n * @since 2.0.0\n */\nexport function flip<A, B, C>(f: (a: A) => (b:\
+    \ B) => C): (b: B) => (a: A) => C\n/** @deprecated */\nexport function flip<A,\
+    \ B, C>(f: (a: A, b: B) => C): (b: B, a: A) => C\nexport function flip(f: Function):\
+    \ Function {\n  return (...args: Array<any>) => {\n    if (args.length > 1) {\n\
+    \      return f(args[1], args[0])\n    }\n\n    return (a: any) => f(a)(args[0])\n\
+    \  }\n}\n\n/**\n * Performs left-to-right function composition. The first argument\
+    \ may have any arity, the remaining arguments must be unary.\n *\n * See also\
+    \ [`pipe`](#pipe).\n *\n * @example\n * import { flow } from 'fp-ts/function'\n\
+    \ *\n * const len = (s: string): number => s.length\n * const double = (n: number):\
+    \ number => n * 2\n *\n * const f = flow(len, double)\n *\n * assert.strictEqual(f('aaa'),\
+    \ 6)\n *\n * @since 2.0.0\n */\nexport function flow<A extends ReadonlyArray<unknown>,\
+    \ B>(ab: (...a: A) => B): (...a: A) => B\nexport function flow<A extends ReadonlyArray<unknown>,\
+    \ B, C>(ab: (...a: A) => B, bc: (b: B) => C): (...a: A) => C\nexport function\
+    \ flow<A extends ReadonlyArray<unknown>, B, C, D>(\n  ab: (...a: A) => B,\n  bc:\
+    \ (b: B) => C,\n  cd: (c: C) => D\n): (...a: A) => D\nexport function flow<A extends\
+    \ ReadonlyArray<unknown>, B, C, D, E>(\n  ab: (...a: A) => B,\n  bc: (b: B) =>\
+    \ C,\n  cd: (c: C) => D,\n  de: (d: D) => E\n): (...a: A) => E\nexport function\
+    \ flow<A extends ReadonlyArray<unknown>, B, C, D, E, F>(\n  ab: (...a: A) => B,\n\
+    \  bc: (b: B) => C,\n  cd: (c: C) => D,\n  de: (d: D) => E,\n  ef: (e: E) => F\n\
+    ): (...a: A) => F\nexport function flow<A extends ReadonlyArray<unknown>, B, C,\
+    \ D, E, F, G>(\n  ab: (...a: A) => B,\n  bc: (b: B) => C,\n  cd: (c: C) => D,\n\
+    \  de: (d: D) => E,\n  ef: (e: E) => F,\n  fg: (f: F) => G\n): (...a: A) => G\n\
+    export function flow<A extends ReadonlyArray<unknown>, B, C, D, E, F, G, H>(\n\
+    \  ab: (...a: A) => B,\n  bc: (b: B) => C,\n  cd: (c: C) => D,\n  de: (d: D) =>\
+    \ E,\n  ef: (e: E) => F,\n  fg: (f: F) => G,\n  gh: (g: G) => H\n): (...a: A)\
+    \ => H\nexport function flow<A extends ReadonlyArray<unknown>, B, C, D, E, F,\
+    \ G, H, I>(\n  ab: (...a: A) => B,\n  bc: (b: B) => C,\n  cd: (c: C) => D,\n \
+    \ de: (d: D) => E,\n  ef: (e: E) => F,\n  fg: (f: F) => G,\n  gh: (g: G) => H,\n\
+    \  hi: (h: H) => I\n): (...a: A) => I\nexport function flow<A extends ReadonlyArray<unknown>,\
+    \ B, C, D, E, F, G, H, I, J>(\n  ab: (...a: A) => B,\n  bc: (b: B) => C,\n  cd:\
+    \ (c: C) => D,\n  de: (d: D) => E,\n  ef: (e: E) => F,\n  fg: (f: F) => G,\n \
+    \ gh: (g: G) => H,\n  hi: (h: H) => I,\n  ij: (i: I) => J\n): (...a: A) => J\n\
+    export function flow(\n  ab: Function,\n  bc?: Function,\n  cd?: Function,\n \
+    \ de?: Function,\n  ef?: Function,\n  fg?: Function,\n  gh?: Function,\n  hi?:\
+    \ Function,\n  ij?: Function\n): unknown {\n  switch (arguments.length) {\n  \
+    \  case 1:\n      return ab\n    case 2:\n      return function (this: unknown)\
+    \ {\n        return bc!(ab.apply(this, arguments))\n      }\n    case 3:\n   \
+    \   return function (this: unknown) {\n        return cd!(bc!(ab.apply(this, arguments)))\n\
+    \      }\n    case 4:\n      return function (this: unknown) {\n        return\
+    \ de!(cd!(bc!(ab.apply(this, arguments))))\n      }\n    case 5:\n      return\
+    \ function (this: unknown) {\n        return ef!(de!(cd!(bc!(ab.apply(this, arguments)))))\n\
+    \      }\n    case 6:\n      return function (this: unknown) {\n        return\
+    \ fg!(ef!(de!(cd!(bc!(ab.apply(this, arguments))))))\n      }\n    case 7:\n \
+    \     return function (this: unknown) {\n        return gh!(fg!(ef!(de!(cd!(bc!(ab.apply(this,\
+    \ arguments)))))))\n      }\n    case 8:\n      return function (this: unknown)\
+    \ {\n        return hi!(gh!(fg!(ef!(de!(cd!(bc!(ab.apply(this, arguments))))))))\n\
+    \      }\n    case 9:\n      return function (this: unknown) {\n        return\
+    \ ij!(hi!(gh!(fg!(ef!(de!(cd!(bc!(ab.apply(this, arguments)))))))))\n      }\n\
+    \  }\n  return\n}\n\n/**\n * @since 2.0.0\n */\nexport function tuple<T extends\
+    \ ReadonlyArray<any>>(...t: T): T {\n  return t\n}\n\n/**\n * @since 2.0.0\n */\n\
+    export function increment(n: number): number {\n  return n + 1\n}\n\n/**\n * @since\
+    \ 2.0.0\n */\nexport function decrement(n: number): number {\n  return n - 1\n\
+    }\n\n/**\n * @since 2.0.0\n */\nexport function absurd<A>(_: never): A {\n  throw\
+    \ new Error('Called `absurd` function which should be uncallable')\n}\n\n/**\n\
+    \ * Creates a tupled version of this function: instead of `n` arguments, it accepts\
+    \ a single tuple argument.\n *\n * @example\n * import { tupled } from 'fp-ts/function'\n\
+    \ *\n * const add = tupled((x: number, y: number): number => x + y)\n *\n * assert.strictEqual(add([1,\
+    \ 2]), 3)\n *\n * @since 2.4.0\n */\nexport function tupled<A extends ReadonlyArray<unknown>,\
+    \ B>(f: (...a: A) => B): (a: A) => B {\n  return (a) => f(...a)\n}\n\n/**\n *\
+    \ Inverse function of `tupled`\n *\n * @since 2.4.0\n */\nexport function untupled<A\
+    \ extends ReadonlyArray<unknown>, B>(f: (a: A) => B): (...a: A) => B {\n  return\
+    \ (...a) => f(a)\n}\n\n/**\n * Pipes the value of an expression into a pipeline\
+    \ of functions.\n *\n * See also [`flow`](#flow).\n *\n * @example\n * import\
+    \ { pipe } from 'fp-ts/function'\n *\n * const len = (s: string): number => s.length\n\
+    \ * const double = (n: number): number => n * 2\n *\n * // without pipe\n * assert.strictEqual(double(len('aaa')),\
+    \ 6)\n *\n * // with pipe\n * assert.strictEqual(pipe('aaa', len, double), 6)\n\
+    \ *\n * @since 2.6.3\n */\nexport function pipe<A>(a: A): A\nexport function pipe<A,\
+    \ B>(a: A, ab: (a: A) => B): B\nexport function pipe<A, B, C>(a: A, ab: (a: A)\
+    \ => B, bc: (b: B) => C): C\nexport function pipe<A, B, C, D>(a: A, ab: (a: A)\
+    \ => B, bc: (b: B) => C, cd: (c: C) => D): D\nexport function pipe<A, B, C, D,\
+    \ E>(a: A, ab: (a: A) => B, bc: (b: B) => C, cd: (c: C) => D, de: (d: D) => E):\
+    \ E\nexport function pipe<A, B, C, D, E, F>(\n  a: A,\n  ab: (a: A) => B,\n  bc:\
+    \ (b: B) => C,\n  cd: (c: C) => D,\n  de: (d: D) => E,\n  ef: (e: E) => F\n):\
+    \ F\nexport function pipe<A, B, C, D, E, F, G>(\n  a: A,\n  ab: (a: A) => B,\n\
+    \  bc: (b: B) => C,\n  cd: (c: C) => D,\n  de: (d: D) => E,\n  ef: (e: E) => F,\n\
+    \  fg: (f: F) => G\n): G\nexport function pipe<A, B, C, D, E, F, G, H>(\n  a:\
+    \ A,\n  ab: (a: A) => B,\n  bc: (b: B) => C,\n  cd: (c: C) => D,\n  de: (d: D)\
+    \ => E,\n  ef: (e: E) => F,\n  fg: (f: F) => G,\n  gh: (g: G) => H\n): H\nexport\
+    \ function pipe<A, B, C, D, E, F, G, H, I>(\n  a: A,\n  ab: (a: A) => B,\n  bc:\
+    \ (b: B) => C,\n  cd: (c: C) => D,\n  de: (d: D) => E,\n  ef: (e: E) => F,\n \
+    \ fg: (f: F) => G,\n  gh: (g: G) => H,\n  hi: (h: H) => I\n): I\nexport function\
+    \ pipe<A, B, C, D, E, F, G, H, I, J>(\n  a: A,\n  ab: (a: A) => B,\n  bc: (b:\
+    \ B) => C,\n  cd: (c: C) => D,\n  de: (d: D) => E,\n  ef: (e: E) => F,\n  fg:\
+    \ (f: F) => G,\n  gh: (g: G) => H,\n  hi: (h: H) => I,\n  ij: (i: I) => J\n):\
+    \ J\nexport function pipe<A, B, C, D, E, F, G, H, I, J, K>(\n  a: A,\n  ab: (a:\
+    \ A) => B,\n  bc: (b: B) => C,\n  cd: (c: C) => D,\n  de: (d: D) => E,\n  ef:\
+    \ (e: E) => F,\n  fg: (f: F) => G,\n  gh: (g: G) => H,\n  hi: (h: H) => I,\n \
+    \ ij: (i: I) => J,\n  jk: (j: J) => K\n): K\nexport function pipe<A, B, C, D,\
+    \ E, F, G, H, I, J, K, L>(\n  a: A,\n  ab: (a: A) => B,\n  bc: (b: B) => C,\n\
+    \  cd: (c: C) => D,\n  de: (d: D) => E,\n  ef: (e: E) => F,\n  fg: (f: F) => G,\n\
+    \  gh: (g: G) => H,\n  hi: (h: H) => I,\n  ij: (i: I) => J,\n  jk: (j: J) => K,\n\
+    \  kl: (k: K) => L\n): L\nexport function pipe<A, B, C, D, E, F, G, H, I, J, K,\
+    \ L, M>(\n  a: A,\n  ab: (a: A) => B,\n  bc: (b: B) => C,\n  cd: (c: C) => D,\n\
+    \  de: (d: D) => E,\n  ef: (e: E) => F,\n  fg: (f: F) => G,\n  gh: (g: G) => H,\n\
+    \  hi: (h: H) => I,\n  ij: (i: I) => J,\n  jk: (j: J) => K,\n  kl: (k: K) => L,\n\
+    \  lm: (l: L) => M\n): M\nexport function pipe<A, B, C, D, E, F, G, H, I, J, K,\
+    \ L, M, N>(\n  a: A,\n  ab: (a: A) => B,\n  bc: (b: B) => C,\n  cd: (c: C) =>\
+    \ D,\n  de: (d: D) => E,\n  ef: (e: E) => F,\n  fg: (f: F) => G,\n  gh: (g: G)\
+    \ => H,\n  hi: (h: H) => I,\n  ij: (i: I) => J,\n  jk: (j: J) => K,\n  kl: (k:\
+    \ K) => L,\n  lm: (l: L) => M,\n  mn: (m: M) => N\n): N\nexport function pipe<A,\
+    \ B, C, D, E, F, G, H, I, J, K, L, M, N, O>(\n  a: A,\n  ab: (a: A) => B,\n  bc:\
+    \ (b: B) => C,\n  cd: (c: C) => D,\n  de: (d: D) => E,\n  ef: (e: E) => F,\n \
+    \ fg: (f: F) => G,\n  gh: (g: G) => H,\n  hi: (h: H) => I,\n  ij: (i: I) => J,\n\
+    \  jk: (j: J) => K,\n  kl: (k: K) => L,\n  lm: (l: L) => M,\n  mn: (m: M) => N,\n\
+    \  no: (n: N) => O\n): O\n\nexport function pipe<A, B, C, D, E, F, G, H, I, J,\
+    \ K, L, M, N, O, P>(\n  a: A,\n  ab: (a: A) => B,\n  bc: (b: B) => C,\n  cd: (c:\
+    \ C) => D,\n  de: (d: D) => E,\n  ef: (e: E) => F,\n  fg: (f: F) => G,\n  gh:\
+    \ (g: G) => H,\n  hi: (h: H) => I,\n  ij: (i: I) => J,\n  jk: (j: J) => K,\n \
+    \ kl: (k: K) => L,\n  lm: (l: L) => M,\n  mn: (m: M) => N,\n  no: (n: N) => O,\n\
+    \  op: (o: O) => P\n): P\n\nexport function pipe<A, B, C, D, E, F, G, H, I, J,\
+    \ K, L, M, N, O, P, Q>(\n  a: A,\n  ab: (a: A) => B,\n  bc: (b: B) => C,\n  cd:\
+    \ (c: C) => D,\n  de: (d: D) => E,\n  ef: (e: E) => F,\n  fg: (f: F) => G,\n \
+    \ gh: (g: G) => H,\n  hi: (h: H) => I,\n  ij: (i: I) => J,\n  jk: (j: J) => K,\n\
+    \  kl: (k: K) => L,\n  lm: (l: L) => M,\n  mn: (m: M) => N,\n  no: (n: N) => O,\n\
+    \  op: (o: O) => P,\n  pq: (p: P) => Q\n): Q\n\nexport function pipe<A, B, C,\
+    \ D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R>(\n  a: A,\n  ab: (a: A) => B,\n\
+    \  bc: (b: B) => C,\n  cd: (c: C) => D,\n  de: (d: D) => E,\n  ef: (e: E) => F,\n\
+    \  fg: (f: F) => G,\n  gh: (g: G) => H,\n  hi: (h: H) => I,\n  ij: (i: I) => J,\n\
+    \  jk: (j: J) => K,\n  kl: (k: K) => L,\n  lm: (l: L) => M,\n  mn: (m: M) => N,\n\
+    \  no: (n: N) => O,\n  op: (o: O) => P,\n  pq: (p: P) => Q,\n  qr: (q: Q) => R\n\
+    ): R\n\nexport function pipe<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q,\
+    \ R, S>(\n  a: A,\n  ab: (a: A) => B,\n  bc: (b: B) => C,\n  cd: (c: C) => D,\n\
+    \  de: (d: D) => E,\n  ef: (e: E) => F,\n  fg: (f: F) => G,\n  gh: (g: G) => H,\n\
+    \  hi: (h: H) => I,\n  ij: (i: I) => J,\n  jk: (j: J) => K,\n  kl: (k: K) => L,\n\
+    \  lm: (l: L) => M,\n  mn: (m: M) => N,\n  no: (n: N) => O,\n  op: (o: O) => P,\n\
+    \  pq: (p: P) => Q,\n  qr: (q: Q) => R,\n  rs: (r: R) => S\n): S\n\nexport function\
+    \ pipe<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T>(\n  a: A,\n\
+    \  ab: (a: A) => B,\n  bc: (b: B) => C,\n  cd: (c: C) => D,\n  de: (d: D) => E,\n\
+    \  ef: (e: E) => F,\n  fg: (f: F) => G,\n  gh: (g: G) => H,\n  hi: (h: H) => I,\n\
+    \  ij: (i: I) => J,\n  jk: (j: J) => K,\n  kl: (k: K) => L,\n  lm: (l: L) => M,\n\
+    \  mn: (m: M) => N,\n  no: (n: N) => O,\n  op: (o: O) => P,\n  pq: (p: P) => Q,\n\
+    \  qr: (q: Q) => R,\n  rs: (r: R) => S,\n  st: (s: S) => T\n): T\nexport function\
+    \ pipe(\n  a: unknown,\n  ab?: Function,\n  bc?: Function,\n  cd?: Function,\n\
+    \  de?: Function,\n  ef?: Function,\n  fg?: Function,\n  gh?: Function,\n  hi?:\
+    \ Function\n): unknown {\n  switch (arguments.length) {\n    case 1:\n      return\
+    \ a\n    case 2:\n      return ab!(a)\n    case 3:\n      return bc!(ab!(a))\n\
+    \    case 4:\n      return cd!(bc!(ab!(a)))\n    case 5:\n      return de!(cd!(bc!(ab!(a))))\n\
+    \    case 6:\n      return ef!(de!(cd!(bc!(ab!(a)))))\n    case 7:\n      return\
+    \ fg!(ef!(de!(cd!(bc!(ab!(a))))))\n    case 8:\n      return gh!(fg!(ef!(de!(cd!(bc!(ab!(a)))))))\n\
+    \    case 9:\n      return hi!(gh!(fg!(ef!(de!(cd!(bc!(ab!(a))))))))\n    default:\
+    \ {\n      let ret = arguments[0]\n      for (let i = 1; i < arguments.length;\
+    \ i++) {\n        ret = arguments[i](ret)\n      }\n      return ret\n    }\n\
+    \  }\n}\n\n/**\n * Type hole simulation\n *\n * @since 2.7.0\n */\nexport const\
+    \ hole: <T>() => T = absurd as any\n\n/**\n * @since 2.11.0\n */\nexport const\
+    \ SK = <A, B>(_: A, b: B): B => b\n\n// -------------------------------------------------------------------------------------\n\
+    // deprecated\n// -------------------------------------------------------------------------------------\n\
+    \n/**\n * Use `Refinement` module instead.\n *\n * @category zone of death\n *\
+    \ @since 2.0.0\n * @deprecated\n */\nexport interface Refinement<A, B extends\
+    \ A> {\n  (a: A): a is B\n}\n\n/**\n * Use `Predicate` module instead.\n *\n *\
+    \ @category zone of death\n * @since 2.0.0\n * @deprecated\n */\nexport interface\
+    \ Predicate<A> {\n  (a: A): boolean\n}\n\n/**\n * Use `Predicate` module instead.\n\
+    \ *\n * @category zone of death\n * @since 2.0.0\n * @deprecated\n */\nexport\
+    \ function not<A>(predicate: Predicate<A>): Predicate<A> {\n  return (a) => !predicate(a)\n\
+    }\n\n/**\n * Use `Endomorphism` module instead.\n *\n * @category zone of death\n\
+    \ * @since 2.0.0\n * @deprecated\n */\nexport interface Endomorphism<A> {\n  (a:\
+    \ A): A\n}\n\n/**\n * Use `Endomorphism` module instead.\n *\n * @category zone\
+    \ of death\n * @since 2.10.0\n * @deprecated\n */\nexport const getEndomorphismMonoid\
+    \ = <A = never>(): Monoid<Endomorphism<A>> => ({\n  concat: (first, second) =>\
+    \ flow(first, second),\n  empty: identity\n})\n\n/**\n * A lazy argument.\n *\n\
+    \ * @since 2.15.0\n */\nexport interface LazyArg<A> {\n  (): A\n}\n\n/** @internal\
+    \ */\nexport const dual: {\n  <DataLast extends (...args: Array<any>) => any,\
+    \ DataFirst extends (...args: Array<any>) => any>(\n    arity: Parameters<DataFirst>['length'],\n\
+    \    body: DataFirst\n  ): DataLast & DataFirst\n  <DataLast extends (...args:\
+    \ Array<any>) => any, DataFirst extends (...args: Array<any>) => any>(\n    isDataFirst:\
+    \ (args: IArguments) => boolean,\n    body: DataFirst\n  ): DataLast & DataFirst\n\
+    } = (arity: any, body: any) => {\n  const isDataFirst: (args: IArguments) => boolean\
+    \ = typeof arity === 'number' ? (args) => args.length >= arity : arity\n  return\
+    \ function (this: any) {\n    const args = Array.from(arguments)\n    if (isDataFirst(arguments))\
+    \ {\n      return body.apply(this, args)\n    }\n    return (self: any) => body(self,\
+    \ ...args)\n  }\n}\n\n// -------------------------------------------------------------------------------------\n\
+    // lagacy\n// -------------------------------------------------------------------------------------\n\
+    \n/**\n * Use `LazyArg` instead.\n *\n * @category lagacy\n * @since 2.0.0\n */\n\
+    export interface Lazy<A> {\n  (): A\n}\n\n\n### Dependency File: HeytingAlgebra.ts\n\
+    /**\n * Heyting algebras are bounded (distributive) lattices that are also equipped\
+    \ with an additional binary operation\n * `implies` (also written as `→`). Heyting\
+    \ algebras also define a complement operation `not` (sometimes written as\n *\
+    \ `¬a`)\n *\n * However, in Heyting algebras this operation is only a pseudo-complement,\
+    \ since Heyting algebras do not necessarily\n * provide the law of the excluded\
+    \ middle. This means that there is no guarantee that `a ∨ ¬a = 1`.\n *\n * Heyting\
+    \ algebras model intuitionistic logic. For a model of classical logic, see the\
+    \ boolean algebra type class\n * implemented as `BooleanAlgebra`.\n *\n * A `HeytingAlgebra`\
+    \ must satisfy the following laws in addition to `BoundedDistributiveLattice`\
+    \ laws:\n *\n * - Implication:\n *   - `a → a <-> 1`\n *   - `a ∧ (a → b) <->\
+    \ a ∧ b`\n *   - `b ∧ (a → b) <-> b`\n *   - `a → (b ∧ c) <-> (a → b) ∧ (a → c)`\n\
+    \ * - Complemented\n *   - `¬a <-> a → 0`\n *\n * @since 2.0.0\n */\nimport {\
+    \ BoundedDistributiveLattice } from './BoundedDistributiveLattice'\n\n// -------------------------------------------------------------------------------------\n\
+    // model\n// -------------------------------------------------------------------------------------\n\
+    \n/**\n * @category model\n * @since 2.0.0\n */\nexport interface HeytingAlgebra<A>\
+    \ extends BoundedDistributiveLattice<A> {\n  readonly implies: (x: A, y: A) =>\
+    \ A\n  readonly not: (x: A) => A\n}\n\nOutput the complete test file, code only,\
+    \ no explanations.\n### Time\nCurrent time: 2025-04-03 22:58:26\n"
+  role: user

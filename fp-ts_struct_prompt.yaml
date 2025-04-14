@@ -1,0 +1,277 @@
+messages:
+- content: You are an AI agent expert in writing unit tests. Your task is to write
+    unit tests for the given code files of the repository. Make sure the tests can
+    be executed without lint or compile errors.
+  role: system
+- content: "### Task Information\nBased on the source code, write/rewrite tests to\
+    \ cover the source code.\nRepository: fp-ts\nSource File Path: src/struct.ts\n\
+    Test File Path: test/struct.ts\nProject Programming Language: typescript\nTesting\
+    \ Framework: vitest\n### Source File Content\n### Source File Content:\n/**\n\
+    \ * @since 2.10.0\n */\nimport * as _ from './internal'\nimport { Semigroup }\
+    \ from './Semigroup'\n\n// -------------------------------------------------------------------------------------\n\
+    // instances\n// -------------------------------------------------------------------------------------\n\
+    \n/**\n * Return a semigroup which works like `Object.assign`.\n *\n * @example\n\
+    \ * import { getAssignSemigroup } from 'fp-ts/struct'\n *\n * interface Person\
+    \ {\n *   readonly name: string\n *   readonly age: number\n * }\n *\n * const\
+    \ S = getAssignSemigroup<Person>()\n * assert.deepStrictEqual(S.concat({ name:\
+    \ 'name', age: 23 }, { name: 'name', age: 24 }), { name: 'name', age: 24 })\n\
+    \ *\n * @category instances\n * @since 2.10.0\n */\nexport const getAssignSemigroup\
+    \ = <A extends object = never>(): Semigroup<A> => ({\n  concat: (first, second)\
+    \ => Object.assign({}, first, second)\n})\n\n// -------------------------------------------------------------------------------------\n\
+    // utils\n// -------------------------------------------------------------------------------------\n\
+    \n/**\n * Creates a new object by recursively evolving a shallow copy of `a`,\
+    \ according to the `transformation` functions.\n *\n * @example\n * import { pipe\
+    \ } from 'fp-ts/function'\n * import { evolve } from 'fp-ts/struct'\n *\n * assert.deepStrictEqual(\n\
+    \ *   pipe(\n *     { a: 'a', b: 1 },\n *     evolve({\n *       a: (a) => a.length,\n\
+    \ *       b: (b) => b * 2\n *     })\n *   ),\n *   { a: 1, b: 2 }\n * )\n *\n\
+    \ * @since 2.11.0\n */\nexport const evolve =\n  <A, F extends { [K in keyof A]:\
+    \ (a: A[K]) => unknown }>(transformations: F) =>\n  (a: A): { [K in keyof F]:\
+    \ ReturnType<F[K]> } => {\n    const out: Record<string, unknown> = {}\n    for\
+    \ (const k in a) {\n      if (_.has.call(a, k)) {\n        out[k] = transformations[k](a[k])\n\
+    \      }\n    }\n    return out as any\n  }\n\n### Source File Dependency Files\
+    \ Content\n### Dependency File: internal.ts\nimport { Either, Left, Right } from\
+    \ './Either'\nimport { dual } from './function'\nimport { IO } from './IO'\nimport\
+    \ { NonEmptyArray } from './NonEmptyArray'\nimport { None, Option, Some } from\
+    \ './Option'\nimport { Reader } from './Reader'\nimport { ReadonlyNonEmptyArray\
+    \ } from './ReadonlyNonEmptyArray'\nimport { Task } from './Task'\n\n// -------------------------------------------------------------------------------------\n\
+    // Option\n// -------------------------------------------------------------------------------------\n\
+    \n/** @internal */\nexport const isNone = (fa: Option<unknown>): fa is None =>\
+    \ fa._tag === 'None'\n\n/** @internal */\nexport const isSome = <A>(fa: Option<A>):\
+    \ fa is Some<A> => fa._tag === 'Some'\n\n/** @internal */\nexport const none:\
+    \ Option<never> = { _tag: 'None' }\n\n/** @internal */\nexport const some = <A>(a:\
+    \ A): Option<A> => ({ _tag: 'Some', value: a })\n\n// -------------------------------------------------------------------------------------\n\
+    // Either\n// -------------------------------------------------------------------------------------\n\
+    \n/** @internal */\nexport const isLeft = <E>(ma: Either<E, unknown>): ma is Left<E>\
+    \ => ma._tag === 'Left'\n\n/** @internal */\nexport const isRight = <A>(ma: Either<unknown,\
+    \ A>): ma is Right<A> => ma._tag === 'Right'\n\n/** @internal */\nexport const\
+    \ left = <E, A = never>(e: E): Either<E, A> => ({ _tag: 'Left', left: e })\n\n\
+    /** @internal */\nexport const right = <A, E = never>(a: A): Either<E, A> => ({\
+    \ _tag: 'Right', right: a })\n\n// -------------------------------------------------------------------------------------\n\
+    // ReadonlyNonEmptyArray\n// -------------------------------------------------------------------------------------\n\
+    \n/** @internal */\nexport const singleton = <A>(a: A): NonEmptyArray<A> => [a]\n\
+    \n/** @internal */\nexport const isNonEmpty = <A>(as: ReadonlyArray<A>): as is\
+    \ ReadonlyNonEmptyArray<A> => as.length > 0\n\n/** @internal */\nexport const\
+    \ head = <A>(as: ReadonlyNonEmptyArray<A>): A => as[0]\n\n/** @internal */\nexport\
+    \ const tail = <A>(as: ReadonlyNonEmptyArray<A>): ReadonlyArray<A> => as.slice(1)\n\
+    \n// -------------------------------------------------------------------------------------\n\
+    // empty\n// -------------------------------------------------------------------------------------\n\
+    \n/** @internal */\nexport const emptyReadonlyArray: readonly [] = []\n\n/** @internal\
+    \ */\nexport const emptyRecord: {} = {}\n\n// -------------------------------------------------------------------------------------\n\
+    // Record\n// -------------------------------------------------------------------------------------\n\
+    \n/** @internal */\nexport const has = Object.prototype.hasOwnProperty\n\n// -------------------------------------------------------------------------------------\n\
+    // NonEmptyArray\n// -------------------------------------------------------------------------------------\n\
+    \n/** @internal */\nexport const fromReadonlyNonEmptyArray = <A>(as: ReadonlyNonEmptyArray<A>):\
+    \ NonEmptyArray<A> => [as[0], ...as.slice(1)]\n\n// -------------------------------------------------------------------------------------\n\
+    // HKT\n// -------------------------------------------------------------------------------------\n\
+    \n/** @internal */\nexport declare const URI: unique symbol\n\n/** @internal */\n\
+    export interface TypeLambda {\n  readonly In: unknown\n  readonly Out2: unknown\n\
+    \  readonly Out1: unknown\n  readonly Target: unknown\n}\n\n/** @internal */\n\
+    export interface TypeClass<F extends TypeLambda> {\n  readonly [URI]?: F\n}\n\n\
+    /** @internal */\nexport type Kind<F extends TypeLambda, In, Out2, Out1, Target>\
+    \ = F extends {\n  readonly type: unknown\n}\n  ? (F & {\n      readonly In: In\n\
+    \      readonly Out2: Out2\n      readonly Out1: Out1\n      readonly Target:\
+    \ Target\n    })['type']\n  : {\n      readonly F: F\n      readonly In: (_: In)\
+    \ => void\n      readonly Out2: () => Out2\n      readonly Out1: () => Out1\n\
+    \      readonly Target: (_: Target) => Target\n    }\n\n// -------------------------------------------------------------------------------------\n\
+    // type classes\n// -------------------------------------------------------------------------------------\n\
+    \n/** @internal */\nexport interface FromEither<F extends TypeLambda> extends\
+    \ TypeClass<F> {\n  readonly fromEither: <R, O, E, A>(e: Either<E, A>) => Kind<F,\
+    \ R, O, E, A>\n}\n\n/** @internal */\nexport interface FromIO<F extends TypeLambda>\
+    \ extends TypeClass<F> {\n  readonly fromIO: <R, O, E, A>(e: IO<A>) => Kind<F,\
+    \ R, O, E, A>\n}\n\n/** @internal */\nexport interface FromTask<F extends TypeLambda>\
+    \ extends TypeClass<F> {\n  readonly fromTask: <R, O, E, A>(e: Task<A>) => Kind<F,\
+    \ R, O, E, A>\n}\n\n/** @internal */\nexport interface FromReader<F extends TypeLambda>\
+    \ extends TypeClass<F> {\n  readonly fromReader: <R, O, E, A>(e: Reader<R, A>)\
+    \ => Kind<F, R, O, E, A>\n}\n\n/** @internal */\nexport const liftNullable =\n\
+    \  <F extends TypeLambda>(F: FromEither<F>) =>\n  <A extends ReadonlyArray<unknown>,\
+    \ B, E>(f: (...a: A) => B | null | undefined, onNullable: (...a: A) => E) =>\n\
+    \  <R, O>(...a: A): Kind<F, R, O, E, NonNullable<B>> => {\n    const o = f(...a)\n\
+    \    return F.fromEither<R, O, E, NonNullable<B>>(\n      o == null ? left(onNullable(...a))\
+    \ : right<NonNullable<B>, E>(o as any)\n    )\n  }\n\n/** @internal */\nexport\
+    \ const liftOption =\n  <F extends TypeLambda>(F: FromEither<F>) =>\n  <A extends\
+    \ ReadonlyArray<unknown>, B, E>(f: (...a: A) => Option<B>, onNone: (...a: A) =>\
+    \ E) =>\n  <R, O>(...a: A): Kind<F, R, O, E, B> => {\n    const o = f(...a)\n\
+    \    return F.fromEither(isNone(o) ? left(onNone(...a)) : right(o.value))\n  }\n\
+    \n/** @internal */\nexport interface FlatMap<F extends TypeLambda> extends TypeClass<F>\
+    \ {\n  readonly flatMap: {\n    <A, R2, O2, E2, B>(f: (a: A) => Kind<F, R2, O2,\
+    \ E2, B>): <R1, O1, E1>(\n      self: Kind<F, R1, O1, E1, A>\n    ) => Kind<F,\
+    \ R1 & R2, O1 | O2, E1 | E2, B>\n    <R1, O1, E1, A, R2, O2, E2, B>(self: Kind<F,\
+    \ R1, O1, E1, A>, f: (a: A) => Kind<F, R2, O2, E2, B>): Kind<\n      F,\n    \
+    \  R1 & R2,\n      O1 | O2,\n      E1 | E2,\n      B\n    >\n  }\n}\n\n/** @internal\
+    \ */\nexport const flatMapNullable = <F extends TypeLambda>(\n  F: FromEither<F>,\n\
+    \  M: FlatMap<F>\n): {\n  <A, B, E2>(f: (a: A) => B | null | undefined, onNullable:\
+    \ (a: A) => E2): <R, O, E1>(\n    self: Kind<F, R, O, E1, A>\n  ) => Kind<F, R,\
+    \ O, E1 | E2, NonNullable<B>>\n  <R, O, E1, A, B, E2>(self: Kind<F, R, O, E1,\
+    \ A>, f: (a: A) => B | null | undefined, onNullable: (a: A) => E2): Kind<\n  \
+    \  F,\n    R,\n    O,\n    E1 | E2,\n    NonNullable<B>\n  >\n} => {\n  return\
+    \ /*#__PURE__*/ dual(\n    3,\n    <R, O, E1, A, B, E2>(\n      self: Kind<F,\
+    \ R, O, E1, A>,\n      f: (a: A) => B | null | undefined,\n      onNullable: (a:\
+    \ A) => E2\n    ): Kind<F, R, O, E1 | E2, NonNullable<B>> =>\n      M.flatMap<R,\
+    \ O, E1, A, R, O, E2, NonNullable<B>>(self, liftNullable(F)(f, onNullable))\n\
+    \  )\n}\n\n/** @internal */\nexport const flatMapOption = <F extends TypeLambda>(\n\
+    \  F: FromEither<F>,\n  M: FlatMap<F>\n): {\n  <A, B, E2>(f: (a: A) => Option<B>,\
+    \ onNone: (a: A) => E2): <R, O, E1>(\n    self: Kind<F, R, O, E1, A>\n  ) => Kind<F,\
+    \ R, O, E1 | E2, B>\n  <R, O, E1, A, B, E2>(self: Kind<F, R, O, E1, A>, f: (a:\
+    \ A) => Option<B>, onNone: (a: A) => E2): Kind<\n    F,\n    R,\n    O,\n    E1\
+    \ | E2,\n    B\n  >\n} => {\n  return /*#__PURE__*/ dual(\n    3,\n    <R, O,\
+    \ E1, A, B, E2>(\n      self: Kind<F, R, O, E1, A>,\n      f: (a: A) => Option<B>,\n\
+    \      onNone: (a: A) => E2\n    ): Kind<F, R, O, E1 | E2, B> => M.flatMap<R,\
+    \ O, E1, A, R, O, E2, B>(self, liftOption(F)(f, onNone))\n  )\n}\n\n/** @internal\
+    \ */\nexport const flatMapEither = <F extends TypeLambda>(\n  F: FromEither<F>,\n\
+    \  M: FlatMap<F>\n): {\n  <A, E2, B>(f: (a: A) => Either<E2, B>): <R, O, E1>(self:\
+    \ Kind<F, R, O, E1, A>) => Kind<F, R, O, E1 | E2, B>\n  <R, O, E1, A, E2, B>(self:\
+    \ Kind<F, R, O, E1, A>, f: (a: A) => Either<E2, B>): Kind<F, R, O, E1 | E2, B>\n\
+    } => {\n  return /*#__PURE__*/ dual(\n    2,\n    <R, O, E1, A, E2, B>(self: Kind<F,\
+    \ R, O, E1, A>, f: (a: A) => Either<E2, B>): Kind<F, R, O, E1 | E2, B> =>\n  \
+    \    M.flatMap(self, (a) => F.fromEither(f(a)))\n  )\n}\n\n/** @internal */\n\
+    export const flatMapIO = <F extends TypeLambda>(\n  F: FromIO<F>,\n  M: FlatMap<F>\n\
+    ): {\n  <A, B>(f: (a: A) => IO<B>): <R, O, E>(self: Kind<F, R, O, E, A>) => Kind<F,\
+    \ R, O, E, B>\n  <R, O, E, A, B>(self: Kind<F, R, O, E, A>, f: (a: A) => IO<B>):\
+    \ Kind<F, R, O, E, B>\n} => {\n  return /*#__PURE__*/ dual(\n    2,\n    <R, O,\
+    \ E, A, B>(self: Kind<F, R, O, E, A>, f: (a: A) => IO<B>): Kind<F, R, O, E, B>\
+    \ =>\n      M.flatMap(self, (a) => F.fromIO(f(a)))\n  )\n}\n\n/** @internal */\n\
+    export const flatMapTask = <F extends TypeLambda>(\n  F: FromTask<F>,\n  M: FlatMap<F>\n\
+    ): {\n  <A, B>(f: (a: A) => Task<B>): <R, O, E>(self: Kind<F, R, O, E, A>) =>\
+    \ Kind<F, R, O, E, B>\n  <R, O, E, A, B>(self: Kind<F, R, O, E, A>, f: (a: A)\
+    \ => Task<B>): Kind<F, R, O, E, B>\n} => {\n  return /*#__PURE__*/ dual(\n   \
+    \ 2,\n    <R, O, E, A, B>(self: Kind<F, R, O, E, A>, f: (a: A) => Task<B>): Kind<F,\
+    \ R, O, E, B> =>\n      M.flatMap(self, (a) => F.fromTask(f(a)))\n  )\n}\n\n/**\
+    \ @internal */\nexport const flatMapReader = <F extends TypeLambda>(\n  F: FromReader<F>,\n\
+    \  M: FlatMap<F>\n): {\n  <A, R2, B>(f: (a: A) => Reader<R2, B>): <R1, O, E>(self:\
+    \ Kind<F, R1, O, E, A>) => Kind<F, R1 & R2, O, E, B>\n  <R1, O, E, A, R2, B>(self:\
+    \ Kind<F, R1, O, E, A>, f: (a: A) => Reader<R2, B>): Kind<F, R1 & R2, O, E, B>\n\
+    } => {\n  return /*#__PURE__*/ dual(\n    2,\n    <R1, O, E, A, R2, B>(self: Kind<F,\
+    \ R1, O, E, A>, f: (a: A) => Reader<R2, B>): Kind<F, R1 & R2, O, E, B> =>\n  \
+    \    M.flatMap(self, (a) => F.fromReader(f(a)))\n  )\n}\n\n\n### Dependency File:\
+    \ Semigroup.ts\n/**\n * If a type `A` can form a `Semigroup` it has an **associative**\
+    \ binary operation.\n *\n * ```ts\n * interface Semigroup<A> {\n *   readonly\
+    \ concat: (x: A, y: A) => A\n * }\n * ```\n *\n * Associativity means the following\
+    \ equality must hold for any choice of `x`, `y`, and `z`.\n *\n * ```ts\n * concat(x,\
+    \ concat(y, z)) = concat(concat(x, y), z)\n * ```\n *\n * A common example of\
+    \ a semigroup is the type `string` with the operation `+`.\n *\n * ```ts\n * import\
+    \ { Semigroup } from 'fp-ts/Semigroup'\n *\n * const semigroupString: Semigroup<string>\
+    \ = {\n *   concat: (x, y) => x + y\n * }\n *\n * const x = 'x'\n * const y =\
+    \ 'y'\n * const z = 'z'\n *\n * semigroupString.concat(x, y) // 'xy'\n *\n * semigroupString.concat(x,\
+    \ semigroupString.concat(y, z)) // 'xyz'\n *\n * semigroupString.concat(semigroupString.concat(x,\
+    \ y), z) // 'xyz'\n * ```\n *\n * *Adapted from https://typelevel.org/cats*\n\
+    \ *\n * @since 2.0.0\n */\nimport { getSemigroup, identity } from './function'\n\
+    import * as _ from './internal'\nimport * as M from './Magma'\nimport * as Or\
+    \ from './Ord'\nimport { ReadonlyRecord } from './ReadonlyRecord'\n\nimport Ord\
+    \ = Or.Ord\nimport Magma = M.Magma\n\n// -------------------------------------------------------------------------------------\n\
+    // model\n// -------------------------------------------------------------------------------------\n\
+    \n/**\n * @category model\n * @since 2.0.0\n */\nexport interface Semigroup<A>\
+    \ extends Magma<A> {}\n\n// -------------------------------------------------------------------------------------\n\
+    // constructors\n// -------------------------------------------------------------------------------------\n\
+    \n/**\n * Get a semigroup where `concat` will return the minimum, based on the\
+    \ provided order.\n *\n * @example\n * import * as N from 'fp-ts/number'\n * import\
+    \ * as S from 'fp-ts/Semigroup'\n *\n * const S1 = S.min(N.Ord)\n *\n * assert.deepStrictEqual(S1.concat(1,\
+    \ 2), 1)\n *\n * @category constructors\n * @since 2.10.0\n */\nexport const min\
+    \ = <A>(O: Ord<A>): Semigroup<A> => ({\n  concat: Or.min(O)\n})\n\n/**\n * Get\
+    \ a semigroup where `concat` will return the maximum, based on the provided order.\n\
+    \ *\n * @example\n * import * as N from 'fp-ts/number'\n * import * as S from\
+    \ 'fp-ts/Semigroup'\n *\n * const S1 = S.max(N.Ord)\n *\n * assert.deepStrictEqual(S1.concat(1,\
+    \ 2), 2)\n *\n * @category constructors\n * @since 2.10.0\n */\nexport const max\
+    \ = <A>(O: Ord<A>): Semigroup<A> => ({\n  concat: Or.max(O)\n})\n\n/**\n * @category\
+    \ constructors\n * @since 2.10.0\n */\nexport const constant = <A>(a: A): Semigroup<A>\
+    \ => ({\n  concat: () => a\n})\n\n// -------------------------------------------------------------------------------------\n\
+    // combinators\n// -------------------------------------------------------------------------------------\n\
+    \n/**\n * The dual of a `Semigroup`, obtained by swapping the arguments of `concat`.\n\
+    \ *\n * @example\n * import { reverse } from 'fp-ts/Semigroup'\n * import * as\
+    \ S from 'fp-ts/string'\n *\n * assert.deepStrictEqual(reverse(S.Semigroup).concat('a',\
+    \ 'b'), 'ba')\n *\n * @since 2.10.0\n */\nexport const reverse: <A>(S: Semigroup<A>)\
+    \ => Semigroup<A> = M.reverse\n\n/**\n * Given a struct of semigroups returns\
+    \ a semigroup for the struct.\n *\n * @example\n * import { struct } from 'fp-ts/Semigroup'\n\
+    \ * import * as N from 'fp-ts/number'\n *\n * interface Point {\n *   readonly\
+    \ x: number\n *   readonly y: number\n * }\n *\n * const S = struct<Point>({\n\
+    \ *   x: N.SemigroupSum,\n *   y: N.SemigroupSum\n * })\n *\n * assert.deepStrictEqual(S.concat({\
+    \ x: 1, y: 2 }, { x: 3, y: 4 }), { x: 4, y: 6 })\n *\n * @since 2.10.0\n */\n\
+    export const struct = <A>(semigroups: { [K in keyof A]: Semigroup<A[K]> }): Semigroup<{\n\
+    \  readonly [K in keyof A]: A[K]\n}> => ({\n  concat: (first, second) => {\n \
+    \   const r: A = {} as any\n    for (const k in semigroups) {\n      if (_.has.call(semigroups,\
+    \ k)) {\n        r[k] = semigroups[k].concat(first[k], second[k])\n      }\n \
+    \   }\n    return r\n  }\n})\n\n/**\n * Given a tuple of semigroups returns a\
+    \ semigroup for the tuple.\n *\n * @example\n * import { tuple } from 'fp-ts/Semigroup'\n\
+    \ * import * as B from 'fp-ts/boolean'\n * import * as N from 'fp-ts/number'\n\
+    \ * import * as S from 'fp-ts/string'\n *\n * const S1 = tuple(S.Semigroup, N.SemigroupSum)\n\
+    \ * assert.deepStrictEqual(S1.concat(['a', 1], ['b', 2]), ['ab', 3])\n *\n * const\
+    \ S2 = tuple(S.Semigroup, N.SemigroupSum, B.SemigroupAll)\n * assert.deepStrictEqual(S2.concat(['a',\
+    \ 1, true], ['b', 2, false]), ['ab', 3, false])\n *\n * @since 2.10.0\n */\nexport\
+    \ const tuple = <A extends ReadonlyArray<unknown>>(\n  ...semigroups: { [K in\
+    \ keyof A]: Semigroup<A[K]> }\n): Semigroup<Readonly<A>> => ({\n  concat: (first,\
+    \ second) => semigroups.map((s, i) => s.concat(first[i], second[i])) as any\n\
+    })\n\n/**\n * Between each pair of elements insert `middle`.\n *\n * @example\n\
+    \ * import { intercalate } from 'fp-ts/Semigroup'\n * import * as S from 'fp-ts/string'\n\
+    \ * import { pipe } from 'fp-ts/function'\n *\n * const S1 = pipe(S.Semigroup,\
+    \ intercalate(' + '))\n *\n * assert.strictEqual(S1.concat('a', 'b'), 'a + b')\n\
+    \ *\n * @since 2.10.0\n */\nexport const intercalate =\n  <A>(middle: A) =>\n\
+    \  (S: Semigroup<A>): Semigroup<A> => ({\n    concat: (x, y) => S.concat(x, S.concat(middle,\
+    \ y))\n  })\n\n// -------------------------------------------------------------------------------------\n\
+    // instances\n// -------------------------------------------------------------------------------------\n\
+    \n/**\n * Always return the first argument.\n *\n * @example\n * import * as S\
+    \ from 'fp-ts/Semigroup'\n *\n * assert.deepStrictEqual(S.first<number>().concat(1,\
+    \ 2), 1)\n *\n * @category instances\n * @since 2.10.0\n */\nexport const first\
+    \ = <A = never>(): Semigroup<A> => ({ concat: identity })\n\n/**\n * Always return\
+    \ the last argument.\n *\n * @example\n * import * as S from 'fp-ts/Semigroup'\n\
+    \ *\n * assert.deepStrictEqual(S.last<number>().concat(1, 2), 2)\n *\n * @category\
+    \ instances\n * @since 2.10.0\n */\nexport const last = <A = never>(): Semigroup<A>\
+    \ => ({ concat: (_, y) => y })\n\n// -------------------------------------------------------------------------------------\n\
+    // utils\n// -------------------------------------------------------------------------------------\n\
+    \n/**\n * Given a sequence of `as`, concat them and return the total.\n *\n *\
+    \ If `as` is empty, return the provided `startWith` value.\n *\n * @example\n\
+    \ * import { concatAll } from 'fp-ts/Semigroup'\n * import * as N from 'fp-ts/number'\n\
+    \ *\n * const sum = concatAll(N.SemigroupSum)(0)\n *\n * assert.deepStrictEqual(sum([1,\
+    \ 2, 3]), 6)\n * assert.deepStrictEqual(sum([]), 0)\n *\n * @since 2.10.0\n */\n\
+    export const concatAll: <A>(S: Semigroup<A>) => (startWith: A) => (as: ReadonlyArray<A>)\
+    \ => A = M.concatAll\n\n// -------------------------------------------------------------------------------------\n\
+    // deprecated\n// -------------------------------------------------------------------------------------\n\
+    \n/**\n * Use `void` module instead.\n *\n * @category zone of death\n * @since\
+    \ 2.0.0\n * @deprecated\n */\nexport const semigroupVoid: Semigroup<void> = constant<void>(undefined)\n\
+    \n/**\n * Use [`getAssignSemigroup`](./struct.ts.html#getAssignSemigroup) instead.\n\
+    \ *\n * @category zone of death\n * @since 2.0.0\n * @deprecated\n */\nexport\
+    \ const getObjectSemigroup = <A extends object = never>(): Semigroup<A> => ({\n\
+    \  concat: (first, second) => Object.assign({}, first, second)\n})\n\n/**\n *\
+    \ Use [`last`](#last) instead.\n *\n * @category zone of death\n * @since 2.0.0\n\
+    \ * @deprecated\n */\nexport const getLastSemigroup = last\n\n/**\n * Use [`first`](#first)\
+    \ instead.\n *\n * @category zone of death\n * @since 2.0.0\n * @deprecated\n\
+    \ */\nexport const getFirstSemigroup = first\n\n/**\n * Use [`tuple`](#tuple)\
+    \ instead.\n *\n * @category zone of death\n * @since 2.0.0\n * @deprecated\n\
+    \ */\nexport const getTupleSemigroup: <T extends ReadonlyArray<Semigroup<any>>>(\n\
+    \  ...semigroups: T\n) => Semigroup<{ [K in keyof T]: T[K] extends Semigroup<infer\
+    \ A> ? A : never }> = tuple as any\n\n/**\n * Use [`struct`](#struct) instead.\n\
+    \ *\n * @category zone of death\n * @since 2.0.0\n * @deprecated\n */\nexport\
+    \ const getStructSemigroup: <O extends ReadonlyRecord<string, any>>(semigroups:\
+    \ {\n  [K in keyof O]: Semigroup<O[K]>\n}) => Semigroup<O> = struct\n\n/**\n *\
+    \ Use [`reverse`](#reverse) instead.\n *\n * @category zone of death\n * @since\
+    \ 2.0.0\n * @deprecated\n */\nexport const getDualSemigroup = reverse\n\n/**\n\
+    \ * Use [`max`](#max) instead.\n *\n * @category zone of death\n * @since 2.0.0\n\
+    \ * @deprecated\n */\nexport const getJoinSemigroup = max\n\n/**\n * Use [`min`](#min)\
+    \ instead.\n *\n * @category zone of death\n * @since 2.0.0\n * @deprecated\n\
+    \ */\nexport const getMeetSemigroup = min\n\n/**\n * Use [`intercalate`](#intercalate)\
+    \ instead.\n *\n * @category zone of death\n * @since 2.5.0\n * @deprecated\n\
+    \ */\nexport const getIntercalateSemigroup = intercalate\n\n/**\n * Use [`concatAll`](#concatall)\
+    \ instead.\n *\n * @category zone of death\n * @since 2.0.0\n * @deprecated\n\
+    \ */\nexport function fold<A>(S: Semigroup<A>): {\n  (startWith: A): (as: ReadonlyArray<A>)\
+    \ => A\n  (startWith: A, as: ReadonlyArray<A>): A\n}\nexport function fold<A>(S:\
+    \ Semigroup<A>): (startWith: A, as?: ReadonlyArray<A>) => A | ((as: ReadonlyArray<A>)\
+    \ => A) {\n  const concatAllS = concatAll(S)\n  return (startWith, as?) => (as\
+    \ === undefined ? concatAllS(startWith) : concatAllS(startWith)(as))\n}\n\n/**\n\
+    \ * Use [`SemigroupAll`](./boolean.ts.html#SemigroupAll) instead.\n *\n * @category\
+    \ zone of death\n * @since 2.0.0\n * @deprecated\n */\nexport const semigroupAll:\
+    \ Semigroup<boolean> = {\n  concat: (x, y) => x && y\n}\n\n/**\n * Use [`SemigroupAny`](./boolean.ts.html#SemigroupAny)\
+    \ instead.\n *\n * @category zone of death\n * @since 2.0.0\n * @deprecated\n\
+    \ */\nexport const semigroupAny: Semigroup<boolean> = {\n  concat: (x, y) => x\
+    \ || y\n}\n\n/**\n * Use [`getSemigroup`](./function.ts.html#getSemigroup) instead.\n\
+    \ *\n * @category zone of death\n * @since 2.0.0\n * @deprecated\n */\nexport\
+    \ const getFunctionSemigroup: <S>(S: Semigroup<S>) => <A = never>() => Semigroup<(a:\
+    \ A) => S> = getSemigroup\n\n/**\n * Use [`Semigroup`](./string.ts.html#Semigroup)\
+    \ instead.\n *\n * @category zone of death\n * @since 2.0.0\n * @deprecated\n\
+    \ */\nexport const semigroupString: Semigroup<string> = {\n  concat: (x, y) =>\
+    \ x + y\n}\n\n/**\n * Use [`SemigroupSum`](./number.ts.html#SemigroupSum) instead.\n\
+    \ *\n * @category zone of death\n * @since 2.0.0\n * @deprecated\n */\nexport\
+    \ const semigroupSum: Semigroup<number> = {\n  concat: (x, y) => x + y\n}\n\n\
+    /**\n * Use [`SemigroupProduct`](./number.ts.html#SemigroupProduct) instead.\n\
+    \ *\n * @category zone of death\n * @since 2.0.0\n * @deprecated\n */\nexport\
+    \ const semigroupProduct: Semigroup<number> = {\n  concat: (x, y) => x * y\n}\n\
+    \nOutput the complete test file, code only, no explanations.\n### Time\nCurrent\
+    \ time: 2025-04-03 23:00:36\n"
+  role: user

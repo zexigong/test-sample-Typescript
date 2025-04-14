@@ -1,0 +1,77 @@
+messages:
+- content: You are an AI agent expert in writing unit tests. Your task is to write
+    unit tests for the given code files of the repository. Make sure the tests can
+    be executed without lint or compile errors.
+  role: system
+- content: '### Task Information
+
+    Based on the source code, write/rewrite tests to cover the source code.
+
+    Repository: type-fest
+
+    Source File Path: source/async-return-type.d.ts
+
+    Test File Path: test-d/async-return-type.ts
+
+    Project Programming Language: typescript
+
+    Testing Framework: tsd
+
+    ### Source File Content
+
+    ### Source File Content:
+
+    type AsyncFunction = (...arguments_: any[]) => PromiseLike<unknown>;
+
+
+    /**
+
+    Unwrap the return type of a function that returns a `Promise`.
+
+
+    There has been [discussion](https://github.com/microsoft/TypeScript/pull/35998)
+    about implementing this type in TypeScript.
+
+
+    @example
+
+    ```ts
+
+    import type {AsyncReturnType} from ''type-fest'';
+
+    import {asyncFunction} from ''api'';
+
+
+    // This type resolves to the unwrapped return type of `asyncFunction`.
+
+    type Value = AsyncReturnType<typeof asyncFunction>;
+
+
+    async function doSomething(value: Value) {}
+
+
+    asyncFunction().then(value => doSomething(value));
+
+    ```
+
+
+    @category Async
+
+    */
+
+    export type AsyncReturnType<Target extends AsyncFunction> = Awaited<ReturnType<Target>>;
+
+
+    ### Source File Dependency Files Content
+
+    ### Dependency File: empty.txt
+
+
+    Output the complete test file, code only, no explanations.
+
+    ### Time
+
+    Current time: 2025-04-04 01:15:31
+
+    '
+  role: user

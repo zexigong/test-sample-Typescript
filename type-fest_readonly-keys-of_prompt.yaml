@@ -1,0 +1,31 @@
+messages:
+- content: You are an AI agent expert in writing unit tests. Your task is to write
+    unit tests for the given code files of the repository. Make sure the tests can
+    be executed without lint or compile errors.
+  role: system
+- content: "### Task Information\nBased on the source code, write/rewrite tests to\
+    \ cover the source code.\nRepository: type-fest\nSource File Path: source/readonly-keys-of.d.ts\n\
+    Test File Path: test-d/readonly-keys-of.ts\nProject Programming Language: typescript\n\
+    Testing Framework: tsd\n### Source File Content\n### Source File Content:\nimport\
+    \ type {WritableKeysOf} from './writable-keys-of';\n\n/**\nExtract all readonly\
+    \ keys from the given type.\n\nThis is useful when you want to create a new type\
+    \ that contains readonly keys only.\n\n@example\n```\nimport type {ReadonlyKeysOf}\
+    \ from 'type-fest';\n\ninterface User {\n\tname: string;\n\tsurname: string;\n\
+    \treadonly id: number;\n}\n\ntype UpdateResponse<Entity extends object> = Pick<Entity,\
+    \ ReadonlyKeysOf<Entity>>;\n\nconst update1: UpdateResponse<User> = {\n    id:\
+    \ 123,\n};\n```\n\n@category Utilities\n*/\nexport type ReadonlyKeysOf<T> =\n\t\
+    T extends unknown // For distributing `T`\n\t\t? Exclude<keyof T, WritableKeysOf<T>>\n\
+    \t\t: never; // Should never happen\n\n### Source File Dependency Files Content\n\
+    ### Dependency File: writable-keys-of.d.ts\nimport type {IsEqual} from './is-equal';\n\
+    import type {KeysOfUnion} from './keys-of-union';\n\n/**\nExtract all writable\
+    \ keys from the given type.\n\nThis is useful when you want to create a new type\
+    \ that contains writable keys only.\n\n@example\n```\nimport type {WritableKeysOf}\
+    \ from 'type-fest';\n\ninterface User {\n\tname: string;\n\tsurname: string;\n\
+    \treadonly id: number;\n}\n\ntype UpdateRequest<Entity extends object> = Pick<Entity,\
+    \ WritableKeysOf<Entity>>;\n\nconst update1: UpdateRequest<User> = {\n\tname:\
+    \ 'Alice',\n\tsurname: 'Acme',\n};\n```\n\n@category Utilities\n*/\nexport type\
+    \ WritableKeysOf<T> = KeysOfUnion<{\n\t[P in keyof T as IsEqual<{[Q in P]: T[P]},\
+    \ {readonly [Q in P]: T[P]}> extends false ? P : never]: never\n}>;\n\nOutput\
+    \ the complete test file, code only, no explanations.\n### Time\nCurrent time:\
+    \ 2025-04-03 23:34:45\n"
+  role: user
